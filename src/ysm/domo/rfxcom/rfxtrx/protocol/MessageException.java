@@ -1,6 +1,6 @@
 package ysm.domo.rfxcom.rfxtrx.protocol;
 
-public class MessageException extends Exception {
+public class MessageException extends BaseException {
 
 	public MessageException() {
 		// TODO Auto-generated constructor stub

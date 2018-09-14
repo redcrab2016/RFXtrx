@@ -231,8 +231,7 @@ public class MessageRaw {
 		if (readsize == -1)
 			throw new MessageException("unexpected end of stream after reading packet length field.");
 		if (readsize != size)
-			throw new MessageException(
-					"Packet broken in stream, expected " + size + " bytes but received only " + readsize + ".");
+			throw new MessageException("Packet broken in stream, expected " + size + " bytes but received only " + readsize + ".");
 		for (int i = 0; i < size; i++) {
 			packet[i + 1] = (short) (0x00 << 24 | bpacket[i] & 0xff);
 		}
