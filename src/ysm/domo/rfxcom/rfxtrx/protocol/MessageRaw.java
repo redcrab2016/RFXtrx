@@ -47,6 +47,7 @@ public class MessageRaw {
 		this();
 		setPacket(packet);
 	}
+	
 
 	public short[] getPacket() {
 		int size = getPacketLength() + 1;
