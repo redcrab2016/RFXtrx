@@ -1,2 +1,2 @@
 # RFXtrx
-RFXtrx communication in Java for *NIX (unix / linux)
+RFXtrx communication in Java for *NIX (unix / linux).
