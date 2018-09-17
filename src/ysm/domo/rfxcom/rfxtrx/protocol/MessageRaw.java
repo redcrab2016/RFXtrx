@@ -18,7 +18,7 @@ public class MessageRaw {
 	private final static int PACKET_SUBTYPE = 2;
 	private final static int PACKET_TYPE = 1;
 	private final static int SEQUENCE_NUMBER = 3;
-
+    private long createtime;
 	private short[] content;
 
 	public MessageRaw() {
@@ -48,6 +48,13 @@ public class MessageRaw {
 		setPacket(packet);
 	}
 	
+	public long getCreationTime() {
+		return createtime;
+	}
+	
+	public long getAgeMillisecond() {
+		return System.currentTimeMillis()-createtime;
+	}
 
 	public short[] getPacket() {
 		int size = getPacketLength() + 1;
@@ -101,6 +108,8 @@ public class MessageRaw {
 		for (int i = 0; i < size + 1; i++) {
 			content[i] = packet[i];
 		}
+		createtime=System.currentTimeMillis();
+	
 	}
 
 	public void setPacketData(short[] packetData) throws MessageException {
@@ -142,11 +151,11 @@ public class MessageRaw {
 		packet2stream(this, out);
 	}
 
-	private String getStringByte(String label, int value) {
+	private static String getStringByte(String label, int value) {
 		return label + "=(0x" + toHexaByte(value) + ") ";
 	}
 
-	private String getStringByte(String label, short[] values) {
+	private static String getStringByte(String label, short[] values) {
 		StringBuffer sb = new StringBuffer();
 		sb.append(label);
 		sb.append("=(");
@@ -165,13 +174,14 @@ public class MessageRaw {
 		for (int i = 0; i < content.length; i++) {
 			content[i] = 0;
 		}
+		createtime=System.currentTimeMillis();
 	}
 
 	private void setPacketLength(int packetLength) {
 		content[PACKET_LENGTH] = (short) (packetLength & 0xFF);
 	}
 
-	private String toHexaByte(int value) {
+	private static String toHexaByte(int value) {
 		String result = Integer.toHexString(value & 0xff);
 		if (result.length() == 1) {
 			result = "0" + result;
@@ -192,8 +202,10 @@ public class MessageRaw {
 			bpacket[i] = (byte) (packet[i] & 0xff);
 		}
 		try {
-			out.write(bpacket, 0, size + 1);
-			out.flush();
+			synchronized(out) {
+				out.write(bpacket, 0, size + 1);
+				out.flush();
+			}
 		} catch (IOException e) {
 			throw new MessageException("Failed to write packet into a stream.", e);
 		}
@@ -223,8 +235,16 @@ public class MessageRaw {
 		bpacket = new byte[size];
 		packet[0] = (short) size;
 		int readsize;
+		int totalread = 0;
+		int sizetoread=size;
 		try {
-			readsize = in.read(bpacket, 0, size);
+			while ( totalread < size ) {
+				readsize = in.read( bpacket, totalread, sizetoread );
+				if ( readsize == -1 ) break;
+				sizetoread -= readsize;
+				totalread += readsize;
+			}
+			readsize = totalread;
 		} catch (IOException e) {
 			throw new MessageException("Error while reading stream for data after packet length field.", e);
 		}

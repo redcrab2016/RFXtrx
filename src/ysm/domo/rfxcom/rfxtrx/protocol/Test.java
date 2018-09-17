@@ -6,61 +6,54 @@ public class Test {
 		// TODO Auto-generated constructor stub
 	}
 
+	
 	public static void main(String[] args) {
+
+		Protocol proto;
 		try {
-			int packetType = 0;
-			int packetSubtype=0;
-			int sequenceNumber = 0;
-			short[] packetData= new short[10];
-			for (int i = 0 ; i < 10; i++) {
-				packetData[i]=0;
-			}
-			MessageRaw msgReset = new MessageRaw(packetType, packetSubtype, sequenceNumber, packetData);
-			MessageRaw msgGetStatus = new MessageRaw(msgReset);
-			msgGetStatus.setSequenceNumber(1);
-			packetData[0]=2;
-			msgGetStatus.setPacketData(packetData);
-			MessageRaw msgCheckRfx = new MessageRaw(msgGetStatus);
-			msgCheckRfx.setSequenceNumber(2);
-			packetData[0]=7;
-			msgCheckRfx.setPacketData(packetData);
+			proto = new Protocol("/home/edevaux/projects/Raspberry/remttyUSB");
+			proto.start();
+			MessageRaw result = proto.controlReset();
+			proto.stop();
+		} catch (ProtocolException e) {
+			
+			e.printStackTrace();
+		}
+
+		/*
+		try {
+			
+			MessageRaw msgReset = new MessageRaw(	0, 0, 0, new short[] {0,0,0,0,0,0,0,0,0,0});
+			MessageRaw msgGetStatus = new MessageRaw(	0, 0, 1, new short[] {2,0,0,0,0,0,0,0,0,0});
+			MessageRaw msgCheckRfx = new MessageRaw(	0, 0, 2, new short[] {7,0,0,0,0,0,0,0,0,0});
 
 			Transport trans = new Transport("/home/edevaux/projects/Raspberry/remttyUSB");
+			trans.start();
+			
 			System.out.println("Send         :" + msgReset.toString());
 			trans.sendMessage(msgReset);
 			for (int i=0;i < 10; i++) {
-				try {
-					Thread.sleep(200);
-				} catch (InterruptedException e) {
-					// do nothing
-				}
+				pause(200);
 				trans.receiveMessage(false);
 			}
 			System.out.println("Send         :" + msgGetStatus.toString());
 			trans.sendMessage(msgGetStatus);
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				// do nothing
-			}
-			MessageRaw status = trans.receiveMessage();
+			MessageRaw status = trans.receiveMessage(5000);
 			System.out.println("Status Answer:"+ status.toString());
+			
 			System.out.println("Send         :" + msgCheckRfx.toString());
 			trans.sendMessage(msgCheckRfx);
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				// do nothing
-			}
 			MessageRaw check = trans.receiveMessage();
 			System.out.println("Check Answer :"+ check.toString());
 			
+			trans.stop();
 		} catch (TransportException e) {
 			e.printStackTrace();
 		} catch (MessageException e) {
 			
 			e.printStackTrace();
 		}
+		*/
 
 	}
 
