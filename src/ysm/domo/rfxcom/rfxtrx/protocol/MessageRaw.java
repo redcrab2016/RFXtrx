@@ -73,6 +73,15 @@ public class MessageRaw {
 		}
 		return packetData;
 	}
+	
+	public short getPacketData(int i) throws MessageException {
+		try {
+			if (i <0) throw new MessageException("Index data can't be negative ("+i+").");
+			return  content[i + PACKET_DATA];
+		} catch (IndexOutOfBoundsException e) {
+			throw new MessageException("To high data index .",e);
+		}
+	}
 
 	public int getPacketLength() {
 		return (int) content[PACKET_LENGTH];

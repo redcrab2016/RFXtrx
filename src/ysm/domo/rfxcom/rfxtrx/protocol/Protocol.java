@@ -114,6 +114,8 @@ public class Protocol {
 		return msg;
 	}
 	
+	
+	
 	public MessageRaw sendMessageAndWaitFor(int sType, int sSubtype, int sSequence, short[] sData,
 											int rType, int rSubtype, int timeout  ) throws ProtocolTimeoutException, ProtocolException, MessageException {
 		return sendMessageAndWaitFor(new MessageRaw(sType, sSubtype, sSequence, sData), rType, rSubtype, sSequence, timeout);
@@ -180,6 +182,14 @@ public class Protocol {
 		
 	}
 	
-	
+	public MessageRaw controlGetStatus() throws ProtocolTimeoutException, ProtocolException {
+		MessageRaw status= control( new short[] {2,0,0,0,0,0,0,0,0,0});
+		return status;
+	}
 
+	public MessageRaw controlStartRFXtrxReceiver() throws ProtocolTimeoutException, ProtocolException {
+		MessageRaw check= control(new short[] {7,0,0,0,0,0,0,0,0,0});
+		return check;
+	}
+	
 }
