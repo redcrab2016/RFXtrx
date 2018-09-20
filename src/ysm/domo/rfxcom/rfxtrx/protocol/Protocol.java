@@ -19,6 +19,8 @@ public class Protocol {
 	private Queue<MessageRaw> messageQueue;
 	private AtomicInteger controlSequence;
 	private AtomicInteger rxtxSequence;
+	private RFState RFXStateConfig;
+	
 	/**
 	 * @throws ProtocolException 
 	 * 
@@ -160,7 +162,7 @@ public class Protocol {
 		return sendMessageAndWaitFor(msg, 2, -1,seq,TIMEOUT);
 	}
 	
-	public MessageRaw controlReset() throws ProtocolException {
+	public String controlReset() throws ProtocolException {
 		try {
 			MessageRaw msgReset = new MessageRaw(	0/*type*/, 0/*subtype*/, 0/*sequence*/, new short[] {0,0,0,0,0,0,0,0,0,0});
 			transport.sendMessage(msgReset);
@@ -169,11 +171,8 @@ public class Protocol {
 				pause(200);
 				transport.receiveMessage(false);
 			}
-			MessageRaw status= control( new short[] {2,0,0,0,0,0,0,0,0,0});
-			System.out.println("Status : "+ status.toString());
-			MessageRaw check= control(new short[] {7,0,0,0,0,0,0,0,0,0});
-			System.out.println("check  : "+ check.toString());
-			return check;
+			controlGetStatus();
+			return controlStartRFXtrxReceiver();
 		} catch (TransportException e) {
 			throw new ProtocolException("Device reset failed.",e);
 		} catch (MessageException e) {
@@ -182,14 +181,47 @@ public class Protocol {
 		
 	}
 	
-	public MessageRaw controlGetStatus() throws ProtocolTimeoutException, ProtocolException {
+	public RFState getCurrentState() {
+		return this.RFXStateConfig;
+	}
+	
+	public RFState controlGetStatus() throws ProtocolTimeoutException, ProtocolException {
 		MessageRaw status= control( new short[] {2,0,0,0,0,0,0,0,0,0});
-		return status;
+		try {
+			this.RFXStateConfig = new RFState(status);
+			return new RFState(status) ;
+		} catch (MessageException e) {
+			throw new ProtocolException("failed to get RF State",e);
+		}
 	}
 
-	public MessageRaw controlStartRFXtrxReceiver() throws ProtocolTimeoutException, ProtocolException {
+	public RFState controlSetMode() throws ProtocolTimeoutException, ProtocolException {
+		return controlSetMode(null);
+	}
+	
+	public RFState controlSetMode(RFState rfstate) throws ProtocolTimeoutException, ProtocolException {
+		if (rfstate == null) rfstate = this.RFXStateConfig;
+		MessageRaw status= control( rfstate.getSetModePacketData());
+		try {
+			this.RFXStateConfig = new RFState(status);
+			return new RFState(status) ;
+		} catch (MessageException e) {
+			throw new ProtocolException("failed to get RF State",e);
+		}
+	}
+	
+	public String controlStartRFXtrxReceiver() throws ProtocolTimeoutException, ProtocolException {
 		MessageRaw check= control(new short[] {7,0,0,0,0,0,0,0,0,0});
-		return check;
+		short[] packetData = check.getPacketData();
+		byte[] byteData = new byte[packetData.length-1];
+		for (int i = 1 ; i < packetData.length ; i++) {
+			byteData[i-1]=(byte)(packetData[i] & 0xFF);
+		}
+		String RFXCopyright = new String(byteData);
+		if (!"Copyright RFXCOM".equals(RFXCopyright)) {
+			throw new ProtocolException("RFX device not ready !");
+		}
+		return RFXCopyright;
 	}
 	
 }

@@ -176,7 +176,7 @@ public enum RFprotocol {
 	RFXtrxIOT433_65	(false,	RFmodel.RFXtrxIOT_433,	RFprotocol.msg6,	RFprotocol.B5,	"Unknown RFXtrxIOT_433 65"),
 	RFXtrxIOT433_66	(false,	RFmodel.RFXtrxIOT_433,	RFprotocol.msg6,	RFprotocol.B6,	"Unknown RFXtrxIOT_433 66"),
 	RFXtrxIOT433_67	(false,	RFmodel.RFXtrxIOT_433,	RFprotocol.msg6,	RFprotocol.B7,	"Unknown RFXtrxIOT_433 67"),
-	// Possble protocols for RFXtrxIOT_868
+	// Possible protocols for RFXtrxIOT_868
 	RFXtrxIOT868_30	(false,	RFmodel.RFXtrxIOT_868,	RFprotocol.msg3,	RFprotocol.B0,	"Unknown RFXtrxIOT_868 30"),
 	RFXtrxIOT868_31	(true,	RFmodel.RFXtrxIOT_868,	RFprotocol.msg3,	RFprotocol.B1,	"Davis AU"),
 	RFXtrxIOT868_32	(true,	RFmodel.RFXtrxIOT_868,	RFprotocol.msg3,	RFprotocol.B2,	"Davis US"),
@@ -228,9 +228,9 @@ public enum RFprotocol {
 	private final static int B7=0x80;
 	
 	private final static int msg3=3;
-	private final static int msg4=3;
-	private final static int msg5=3;
-	private final static int msg6=3;
+	private final static int msg4=4;
+	private final static int msg5=5;
+	private final static int msg6=6;
 	
 	private final boolean valid;
 	private final int msgIdx;
@@ -296,7 +296,7 @@ public enum RFprotocol {
 				int idx = proto.getMsgIdx();
 				int orMask = proto.getOrMask();
 				if (	proto.getModel() == model && 
-						(packetData[idx] & orMask) >0) {
+						(packetData[idx] & orMask & 0xFF) >0) {
 					protocols.add(proto);
 				}
 			}
@@ -332,6 +332,21 @@ public enum RFprotocol {
 		} else {
 			throw new MessageException("Incorrect Message to set protocol list, Expect setStatus message.");
 		}
+	}
+	
+	public static short[] getProtocolData( List<RFprotocol> lstProto) {
+		short[] protoData = new short[4];
+		protoData[0]=0;
+		protoData[1]=0;
+		protoData[2]=0;
+		protoData[3]=0;
+		for (RFprotocol aProto : lstProto) {
+			int idx = aProto.getMsgIdx();
+			int orMask = aProto.getOrMask();
+			protoData[idx-3] |= orMask;
+		}
+		return protoData;
+		
 	}
 	
 }

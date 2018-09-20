@@ -9,14 +9,17 @@ public class Test {
 	
 	public static void main(String[] args) {
 
-		Protocol proto;
+		Protocol proto=null;
 		try {
 			proto = new Protocol("/home/edevaux/projects/Raspberry/remttyUSB");
 			proto.start();
-			MessageRaw result = proto.controlReset();
+			String result = proto.controlReset();
+			System.out.println(result);
+			System.out.println(proto.getCurrentState().toString());
 			proto.stop();
 		} catch (ProtocolException e) {
-			
+			if (proto != null)
+				proto.stop();
 			e.printStackTrace();
 		}
 
