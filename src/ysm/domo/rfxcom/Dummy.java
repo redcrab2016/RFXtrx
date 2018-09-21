@@ -1,4 +1,4 @@
-package ysm.domo.rfxcom.rfxtrx.protocol;
+package ysm.domo.rfxcom;
 
 public class Dummy {
 

@@ -1,7 +1,22 @@
-/**
- * 
- */
-package ysm.domo.rfxcom.rfxtrx.protocol;
+//---------------------------------------------------------------------------- 
+//                     Software License Agreement                       
+//                                                                      
+// Copyright 2011-2016, RFXCOM 
+// 
+// ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under 
+// Netherlands Copyright Laws and Treaties and shall be subject to the  
+// exclusive jurisdiction of the Netherlands Courts. The information from this 
+// file may freely be used to create programs to exclusively interface with 
+// RFXCOM products only. Any other use or unauthorized reprint of this material 
+// is prohibited. No part of this file may be reproduced or transmitted in 
+// any form or by any means, electronic or mechanical, including photocopying, 
+// recording, or by any information storage and retrieval system without 
+// express written permission from RFXCOM. 
+// 
+// The above copyright notice shall be included in all copies or substantial 
+// portions of this Software. 
+//----------------------------------------------------------------------------- 
+package ysm.domo.rfxcom.rfxtrx.io;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +28,8 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import ysm.domo.rfxcom.rfxtrx.Config;
+
 /**
  * @author edevaux
  *
@@ -22,6 +39,7 @@ public class Transport {
 	private OutputStream out;
 	private MessagePump pump;
 	private Thread pumpThread;
+	private Config config;
 	
 	class MessagePump implements Runnable {
 
@@ -89,19 +107,8 @@ public class Transport {
 		
 	}
 	
-	
-	
-	
-	public Transport(InputStream in, OutputStream out) throws TransportException {
-		init( in, out );
-	}
-	
-	public Transport(File devicePath) throws TransportException {
-		init(devicePath);
-	}
-	
-	public Transport(String devicePath) throws TransportException {
-		init(devicePath);
+	public Transport(Config config) throws TransportException {
+		init(config);
 	}
 	
 	public void sendMessage(MessageRaw msg)  {
@@ -232,7 +239,9 @@ public class Transport {
 		init( in, out );
 	}
 	
-	private void init(String devicePath) throws TransportException {
+	private void init(Config config) throws TransportException {
+		this.config = config;
+		String devicePath = config.get("rfxtrx.transport.linux.device.path");
 		File fDevicePath = null;
 		if ( devicePath == null ) 
 			throw new TransportException("Null device path String object.");

@@ -1,10 +1,28 @@
-/**
- * 
- */
+//---------------------------------------------------------------------------- 
+//                     Software License Agreement                       
+//                                                                      
+// Copyright 2011-2016, RFXCOM 
+// 
+// ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under 
+// Netherlands Copyright Laws and Treaties and shall be subject to the  
+// exclusive jurisdiction of the Netherlands Courts. The information from this 
+// file may freely be used to create programs to exclusively interface with 
+// RFXCOM products only. Any other use or unauthorized reprint of this material 
+// is prohibited. No part of this file may be reproduced or transmitted in 
+// any form or by any means, electronic or mechanical, including photocopying, 
+// recording, or by any information storage and retrieval system without 
+// express written permission from RFXCOM. 
+// 
+// The above copyright notice shall be included in all copies or substantial 
+// portions of this Software. 
+//----------------------------------------------------------------------------- 
 package ysm.domo.rfxcom.rfxtrx.protocol;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import ysm.domo.rfxcom.rfxtrx.io.MessageException;
+import ysm.domo.rfxcom.rfxtrx.io.MessageRaw;
 
 /**
  * @author edevaux
@@ -288,7 +306,7 @@ public enum RFprotocol {
 		if ( msg == null ) throw new MessageException("Null message.");
 		if (  msg.getPacketType() == 1 && 
 			  msg.getPacketSubtype() == 0 &&
-			  msg.getPacketData(0) == 2 ) { // Message resulting of getSatus request
+			  (msg.getPacketData(0) == 2 || msg.getPacketData(0) == 3)) { // Message resulting of getSatus request
 			List<RFprotocol> protocols = new ArrayList<RFprotocol>();
 			short[] packetData = msg.getPacketData();
 			RFmodel model = RFtrxType.getType(packetData[1]).getModel();

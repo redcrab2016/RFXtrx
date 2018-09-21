@@ -1,4 +1,10 @@
-package ysm.domo.rfxcom.rfxtrx.protocol;
+package ysm.domo.rfxcom;
+
+import java.io.IOException;
+
+import ysm.domo.rfxcom.rfxtrx.Config;
+import ysm.domo.rfxcom.rfxtrx.protocol.Protocol;
+import ysm.domo.rfxcom.rfxtrx.protocol.ProtocolException;
 
 public class Test {
 
@@ -11,13 +17,13 @@ public class Test {
 
 		Protocol proto=null;
 		try {
-			proto = new Protocol("/home/edevaux/projects/Raspberry/remttyUSB");
+			proto = new Protocol(new Config("/home/edevaux/projects/Raspberry/eclipse-workspace/RFXtrx/config.properties"));
 			proto.start();
 			String result = proto.controlReset();
 			System.out.println(result);
 			System.out.println(proto.getCurrentState().toString());
 			proto.stop();
-		} catch (ProtocolException e) {
+		} catch (ProtocolException | IOException e) {
 			if (proto != null)
 				proto.stop();
 			e.printStackTrace();

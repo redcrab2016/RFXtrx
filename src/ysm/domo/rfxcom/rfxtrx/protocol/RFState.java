@@ -1,9 +1,27 @@
-/**
- * 
- */
+//---------------------------------------------------------------------------- 
+//                     Software License Agreement                       
+//                                                                      
+// Copyright 2011-2016, RFXCOM 
+// 
+// ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under 
+// Netherlands Copyright Laws and Treaties and shall be subject to the  
+// exclusive jurisdiction of the Netherlands Courts. The information from this 
+// file may freely be used to create programs to exclusively interface with 
+// RFXCOM products only. Any other use or unauthorized reprint of this material 
+// is prohibited. No part of this file may be reproduced or transmitted in 
+// any form or by any means, electronic or mechanical, including photocopying, 
+// recording, or by any information storage and retrieval system without 
+// express written permission from RFXCOM. 
+// 
+// The above copyright notice shall be included in all copies or substantial 
+// portions of this Software. 
+//----------------------------------------------------------------------------- 
 package ysm.domo.rfxcom.rfxtrx.protocol;
 
 import java.util.List;
+
+import ysm.domo.rfxcom.rfxtrx.io.MessageException;
+import ysm.domo.rfxcom.rfxtrx.io.MessageRaw;
 
 /**
  * @author edevaux
@@ -21,7 +39,7 @@ public class RFState {
 	private RFfirmwareType FWType;
 	private int noiseLevel;
 	private List<RFprotocol> enabledProtocols;
-	private MessageRaw stateMessage;
+//	private MessageRaw stateMessage;
 	
 	/**
 	 * 
@@ -58,7 +76,7 @@ public class RFState {
 	
 	public void init(MessageRaw msg) throws MessageException {
 		if (msg == null ) throw new MessageException("Null message");
-		stateMessage = new MessageRaw(msg);
+//		stateMessage = new MessageRaw(msg);
 		if (	msg.getPacketType()		== 0x01 &&
 				msg.getPacketSubtype()	== 0x00 &&
 				(msg.getPacketData(0)	== 0x02 || 
@@ -123,6 +141,38 @@ public class RFState {
 		this.enabledProtocols = enabledProtocols;
 	}
 
+	public boolean enableProtocol(RFprotocol proto) {
+		if (proto != null &&
+			proto.getModel() == this.getRfxtrxType().getModel() &&
+			!enabledProtocols.contains(proto)) {
+			enabledProtocols.add(proto);
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean enableProtocol(String strProto) {
+		if (strProto == null) return false;
+		RFprotocol proto = RFprotocol.getProtocol(this.getRfxtrxType().getModel(), strProto);
+		return enableProtocol(proto);
+	}
+	
+	public void disableProtocol(RFprotocol proto) {
+		if (proto != null && enabledProtocols.contains(proto)) {
+			enabledProtocols.remove(proto);
+		}
+	}
+	
+	public void disableProtocol(String strProto) {
+		if (strProto == null) return;
+		RFprotocol proto = RFprotocol.getProtocol(this.getRfxtrxType().getModel(), strProto);
+		disableProtocol(proto);
+	}
+	
+	public void disableAllProtocol() {
+		enabledProtocols.clear();
+	}
+	
 	/**
 	 * @return the rfxtrxType
 	 */

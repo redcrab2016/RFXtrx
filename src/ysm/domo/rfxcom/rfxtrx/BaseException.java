@@ -16,31 +16,53 @@
 // The above copyright notice shall be included in all copies or substantial 
 // portions of this Software. 
 //----------------------------------------------------------------------------- 
-package ysm.domo.rfxcom.rfxtrx.protocol;
+package ysm.domo.rfxcom.rfxtrx;
 
-public class ProtocolTimeoutException extends ProtocolException {
+/**
+ * @author edevaux
+ *
+ */
+public class BaseException extends Exception {
 
-	public ProtocolTimeoutException() {
+	/**
+	 * 
+	 */
+	public BaseException() {
 		// TODO Auto-generated constructor stub
 	}
 
-	public ProtocolTimeoutException(String message) {
+	/**
+	 * @param message
+	 */
+	public BaseException(String message) {
 		super(message);
 		// TODO Auto-generated constructor stub
 	}
 
-	public ProtocolTimeoutException(Throwable cause) {
+	/**
+	 * @param cause
+	 */
+	public BaseException(Throwable cause) {
 		super(cause);
 		// TODO Auto-generated constructor stub
 	}
 
-	public ProtocolTimeoutException(String message, Throwable cause) {
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public BaseException(String message, Throwable cause) {
 		super(message, cause);
 		// TODO Auto-generated constructor stub
 	}
 
-	public ProtocolTimeoutException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
+	/**
+	 * @param message
+	 * @param cause
+	 * @param enableSuppression
+	 * @param writableStackTrace
+	 */
+	public BaseException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 		// TODO Auto-generated constructor stub
 	}

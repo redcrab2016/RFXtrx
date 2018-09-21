@@ -1,11 +1,32 @@
-/**
- * 
- */
+//---------------------------------------------------------------------------- 
+//                     Software License Agreement                       
+//                                                                      
+// Copyright 2011-2016, RFXCOM 
+// 
+// ALL RIGHTS RESERVED. This code is owned by RFXCOM, and is protected under 
+// Netherlands Copyright Laws and Treaties and shall be subject to the  
+// exclusive jurisdiction of the Netherlands Courts. The information from this 
+// file may freely be used to create programs to exclusively interface with 
+// RFXCOM products only. Any other use or unauthorized reprint of this material 
+// is prohibited. No part of this file may be reproduced or transmitted in 
+// any form or by any means, electronic or mechanical, including photocopying, 
+// recording, or by any information storage and retrieval system without 
+// express written permission from RFXCOM. 
+// 
+// The above copyright notice shall be included in all copies or substantial 
+// portions of this Software. 
+//----------------------------------------------------------------------------- 
 package ysm.domo.rfxcom.rfxtrx.protocol;
 
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import ysm.domo.rfxcom.rfxtrx.Config;
+import ysm.domo.rfxcom.rfxtrx.io.MessageException;
+import ysm.domo.rfxcom.rfxtrx.io.MessageRaw;
+import ysm.domo.rfxcom.rfxtrx.io.Transport;
+import ysm.domo.rfxcom.rfxtrx.io.TransportException;
 
 /**
  * @author edevaux
@@ -20,29 +41,40 @@ public class Protocol {
 	private AtomicInteger controlSequence;
 	private AtomicInteger rxtxSequence;
 	private RFState RFXStateConfig;
-	
+	private Config config;
 	/**
 	 * @throws ProtocolException 
 	 * 
 	 */
-	public Protocol(String devicePath) throws ProtocolException {
+	public Protocol(Config config) throws ProtocolException {
+		this.config = config;
+		transport = null;
+		messageQueue = null;
+		start();
+	}
+	
+	
+	public void start() throws ProtocolException {
+		if (transport != null) {
+			stop();
+		}
 		try {
-			transport = new Transport(devicePath);
+			transport = new Transport(config);
 			messageQueue = new LinkedList<MessageRaw>();
 			controlSequence=new AtomicInteger(0);
-			rxtxSequence=new AtomicInteger(0);
-		} catch (TransportException e) {
-			throw new ProtocolException("Failed to initialize protocol with device '"+String.valueOf(devicePath)+"'",e);
+			rxtxSequence=new AtomicInteger(0);		
+			transport.start();
+		this.controlReset();
+		} catch(TransportException e) {
+			throw new ProtocolException("Failed to initialize protocol with device.",e);			
 		}
 	}
 	
-	
-	public void start() {
-		transport.start();
-	}
-	
 	public void stop() {
+		if (transport == null) return;
 		transport.stop();
+		pause(1000);
+		transport = null;
 	}
 	
 	private static void pause(int milliseconds) {
@@ -172,6 +204,15 @@ public class Protocol {
 				transport.receiveMessage(false);
 			}
 			controlGetStatus();
+			String strproto = config.get("rfxtrx.protocol.enable");	
+			if (strproto != null) {
+				String[] protoArray = strproto.split(",");
+				RFXStateConfig.disableAllProtocol();
+				for (String proto: protoArray) {
+					RFXStateConfig.enableProtocol(proto.trim());
+				}
+				controlSetMode();
+			}
 			return controlStartRFXtrxReceiver();
 		} catch (TransportException e) {
 			throw new ProtocolException("Device reset failed.",e);
