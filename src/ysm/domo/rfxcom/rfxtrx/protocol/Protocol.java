@@ -64,7 +64,7 @@ public class Protocol {
 			controlSequence=new AtomicInteger(0);
 			rxtxSequence=new AtomicInteger(0);		
 			transport.start();
-		this.controlReset();
+			controlReset();
 		} catch(TransportException e) {
 			throw new ProtocolException("Failed to initialize protocol with device.",e);			
 		}
@@ -128,7 +128,7 @@ public class Protocol {
 		}
 	}
 	
-	private MessageRaw waitFor(int type, int subtype, int sequence, int timeout) throws ProtocolTimeoutException,ProtocolException {
+	public MessageRaw waitFor(int type, int subtype, int sequence, int timeout) throws ProtocolTimeoutException,ProtocolException {
 		MessageRaw msg = null;
 		long start = System.currentTimeMillis();
 		do {
@@ -182,7 +182,7 @@ public class Protocol {
 		return sendMessageAndWaitFor(msg, 1,-1,seq,TIMEOUT);
 	}
 	
-	public MessageRaw txRx(int type, int subtype, short[] packetData) throws ProtocolTimeoutException, ProtocolException {
+	public MessageRaw transmit(int type, int subtype, short[] packetData) throws ProtocolTimeoutException, ProtocolException {
 		if (type <4) throw new ProtocolException("Invalid type message "+ type);
 		int seq=rxtxSequence.getAndIncrement()%256;
 		MessageRaw msg;

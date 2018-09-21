@@ -19,7 +19,7 @@
 package ysm.domo.rfxcom.rfxtrx.protocol;
 
 public enum RFfirmwareType {
-	TYPE1rec	(0x00, "Type1 RFXrec receive only firmaware"),
+	TYPE1rec	(0x00, "Type1 RFXrec receive only firmware"),
 	TYPE1		(0x01, "Type1"),
 	TYPE2		(0x02, "Type2"),
 	EXT			(0x03, "Ext"),

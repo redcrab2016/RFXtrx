@@ -241,12 +241,35 @@ public class Transport {
 	
 	private void init(Config config) throws TransportException {
 		this.config = config;
-		String devicePath = config.get("rfxtrx.transport.linux.device.path");
-		File fDevicePath = null;
-		if ( devicePath == null ) 
-			throw new TransportException("Null device path String object.");
-		fDevicePath = new File(devicePath);
-		init(fDevicePath);
+		String os = config.get("os.name");
+		if (os.trim().equalsIgnoreCase("Linux")) {
+			String devicePath = config.get("rfxtrx.transport.linux.device.path");
+			File fDevicePath = null;
+			if ( devicePath == null ) 
+				throw new TransportException("Null device path String object.");
+			fDevicePath = new File(devicePath);
+			String cmdConfigPort = config.get("rfxtrx.transport.linux.device.configcommand");;
+			if (cmdConfigPort != null ) {
+				Process p;
+				try {
+					p = Runtime.getRuntime().exec(cmdConfigPort);
+				} catch (IOException e1) {
+					throw new TransportException("Failed to invoke RFXCOM port configuration command '"+cmdConfigPort+"'. ",e1);
+				}
+				int status=-4242;
+				try {
+					status = p.waitFor();
+				} catch (InterruptedException e) {
+					// do nothing
+				}
+				if (status !=0) {
+					throw new TransportException("Can configure port '" + devicePath + "' with command '"+cmdConfigPort +"' exit code is "+status);
+				}
+			}
+			init(fDevicePath);
+		} else {
+			throw new TransportException("Unsupported OS "+os);
+		}
 	}
 	
 	
