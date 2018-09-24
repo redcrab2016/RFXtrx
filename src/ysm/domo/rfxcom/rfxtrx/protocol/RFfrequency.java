@@ -62,4 +62,24 @@ public enum RFfrequency {
 		}
 		return resultfreq;
 	}
+	
+	public static RFfrequency get(RFmodel model, String strfreq) {
+		if (strfreq == null) return null;
+		if (strfreq.trim().length() == 0 ) return null;
+		strfreq = strfreq.trim().toUpperCase().replaceAll(" ", "");
+		if (!model.isXmitpwr()) return null;
+		if (strfreq.matches("^[0-9]{3}(\\.[0-9]{2})?(MHZ)?$")) {
+			if (!strfreq.matches("^.+MHZ$")) {
+				strfreq+="MHZ";
+			}
+			for (RFfrequency afreq: RFfrequency.values()) {
+				if (afreq.model == model && afreq.getDescription().equalsIgnoreCase(strfreq)) {
+					return afreq;
+				}
+			}
+			return null;
+		} else {
+			return null;
+		}
+	}
 }

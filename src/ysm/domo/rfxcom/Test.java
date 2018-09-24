@@ -15,7 +15,9 @@ public class Test {
 		try {
 			// please adapt the file path name to your appropriate config file name path.
 			proto = new Protocol(new Config("/home/edevaux/projects/Raspberry/eclipse-workspace/RFXtrx/config.properties"));
-			System.out.println(proto.getCurrentState().toString());
+			//System.out.println(proto.getCurrentState().toString());
+			proto.loopInOut();
+			
 			MessageRaw msg;
 			do {
 				// catch all messages

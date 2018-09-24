@@ -18,9 +18,16 @@
 //----------------------------------------------------------------------------- 
 package ysm.domo.rfxcom.rfxtrx.protocol;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import ysm.domo.rfxcom.rfxtrx.Config;
 import ysm.domo.rfxcom.rfxtrx.io.MessageException;
@@ -33,6 +40,7 @@ import ysm.domo.rfxcom.rfxtrx.io.TransportException;
  *
  */
 public class Protocol {
+	private static final Logger LOGGER = Logger.getLogger( Protocol.class.getName() );
 
 	private static final int TIMEOUT=5000;
 	private static final int MAXAGE=10000;
@@ -50,7 +58,12 @@ public class Protocol {
 		this.config = config;
 		transport = null;
 		messageQueue = null;
-		start();
+		try {
+			start();
+		}	catch(ProtocolException e) {
+			stop();
+			throw e;
+		}
 	}
 	
 	
@@ -66,6 +79,7 @@ public class Protocol {
 			transport.start();
 			controlReset();
 		} catch(TransportException e) {
+			if (transport != null) transport.stop();
 			throw new ProtocolException("Failed to initialize protocol with device.",e);			
 		}
 	}
@@ -182,6 +196,11 @@ public class Protocol {
 		return sendMessageAndWaitFor(msg, 1,-1,seq,TIMEOUT);
 	}
 	
+	public MessageRaw transmit(String strMessage) throws ProtocolTimeoutException, ProtocolException {
+		LOGGER.info("Send message : " + strMessage);
+		return null;
+	}
+
 	public MessageRaw transmit(int type, int subtype, short[] packetData) throws ProtocolTimeoutException, ProtocolException {
 		if (type <4) throw new ProtocolException("Invalid type message "+ type);
 		int seq=rxtxSequence.getAndIncrement()%256;
@@ -191,6 +210,7 @@ public class Protocol {
 		} catch (MessageException e) {
 			throw new ProtocolException("failed to create message for control",e);
 		}
+		LOGGER.info("Send message : " + msg.toString());
 		return sendMessageAndWaitFor(msg, 2, -1,seq,TIMEOUT);
 	}
 	
@@ -204,16 +224,38 @@ public class Protocol {
 				transport.receiveMessage(false);
 			}
 			controlGetStatus();
-			String strproto = config.get("rfxtrx.protocol.enable");	
+			String strfrequency = config.get("rfxtrx.protocol.frequency",RFXStateConfig.getRfFrequency().getDescription());
+			String strxmitpower = config.get("rfxtrx.protocol.txpower", RFXStateConfig.getXmitPower().getDescription());
+			String strproto = config.get("rfxtrx.protocol.enable");
+			boolean toUpdate = false;
 			if (strproto != null) {
 				String[] protoArray = strproto.split(",");
 				RFXStateConfig.disableAllProtocol();
 				for (String proto: protoArray) {
-					RFXStateConfig.enableProtocol(proto.trim());
+					if (RFXStateConfig.enableProtocol(proto.trim()))
+						toUpdate = true;
 				}
-				controlSetMode();
 			}
-			return controlStartRFXtrxReceiver();
+			if (strxmitpower != null) {
+				RFxmitpwr txpower = RFxmitpwr.get(strxmitpower);
+				if (txpower != null &&
+					RFXStateConfig.getRfxtrxType().getModel().isXmitpwr() &&
+					txpower != RFXStateConfig.getXmitPower()) {
+					RFXStateConfig.setXmitPower(txpower);
+					toUpdate = true;
+				}
+			}
+			if (strfrequency != null) {
+				RFfrequency freq = RFfrequency.get(RFXStateConfig.getRfxtrxType().getModel(), strfrequency);
+				if (freq != null && freq != RFXStateConfig.getRfFrequency()) {
+					RFXStateConfig.setRfFrequency(freq);
+					toUpdate = true;
+				}
+			}
+			if (toUpdate) controlSetMode();
+			String started =  controlStartRFXtrxReceiver();
+			LOGGER.info("\n"+started + "\n" + RFXStateConfig.toString());
+			return started;
 		} catch (TransportException e) {
 			throw new ProtocolException("Device reset failed.",e);
 		} catch (MessageException e) {
@@ -263,6 +305,106 @@ public class Protocol {
 			throw new ProtocolException("RFX device not ready !");
 		}
 		return RFXCopyright;
+	}
+	
+	public void loopInOut() throws ProtocolException {
+		MessageRaw msg = null;
+		String pipeInName = config.get("rfxtrx.protocol.input.path");
+		if (pipeInName == null || pipeInName.trim().length() == 0) {
+			throw new ProtocolException("Missing or empty key rfxtrx.protocol.input.path in configuration");
+		}
+		File pipeInFile = new File(pipeInName);
+		if (!pipeInFile.exists()) {
+			String pipeInCmd = config.get("rfxtrx.protocol.input.path.configcommand");
+			if (pipeInCmd == null || pipeInCmd.trim().length()==0) {
+				throw new ProtocolException("Missing or empty key rfxtrx.protocol.input.path.configcommand in configuration");
+			}
+			try {
+				Process  pipeCmdProc = Runtime.getRuntime().exec(pipeInCmd);
+				try {
+					int status = pipeCmdProc.waitFor();
+				} catch (InterruptedException e) {
+					// do nothing
+				}
+			} catch (IOException e) {
+				throw new ProtocolException("Failed to execute '"+pipeInCmd+"'",e);
+			}
+		}
+		
+		
+		InputStream in = null;
+		byte[] buffer = new byte[64000];
+		int bufflen = 0;
+		do {
+			
+			if (in == null) {
+				try {
+					try {
+						String [] bootPipe= {"sh","-c", "echo '' >"+pipeInName};
+						Runtime.getRuntime().exec(bootPipe);
+					} catch (IOException e) {
+						LOGGER.log(Level.SEVERE,"can't bootstarp the pipe !",e);
+					}
+					in = new FileInputStream(pipeInFile);
+				} catch (FileNotFoundException e) {
+					throw new ProtocolException("Can't read "+pipeInName,e);
+				}
+			}
+			
+			try {
+				while (in != null && in.available()>0) {
+					int c = in.read();
+					if (c==13 || c==10) {
+						byte[] forString = new byte[bufflen];
+						for (int i=0; i < bufflen; i++) {
+							forString[i] = buffer[i];
+						}
+						String strMessage = new String( forString);
+						this.transmit(strMessage);
+						//in.close();
+						//in = null;
+						bufflen=0;
+						break;
+					} else {
+						if (c>=0)
+							buffer[bufflen++] = (byte)(c & 0xFF);
+					}
+				}
+			} catch (IOException e1) {
+				//don't care .. retry later
+				in = null;
+			}
+			
+			
+			try {
+				msg = this.waitFor(-1, -1, -1, 1);
+				LOGGER.info("received message : " + msg.toString());
+				int ptype = msg.getPacketType();
+				int psubtype = msg.getPacketSubtype();
+				String strTypeSubtype = MessageRaw.toHexaByte(ptype)+"."+MessageRaw.toHexaByte(psubtype);
+				String rootKey="rfxtrx.protocol.event.";
+				String eventCmd = config.get(rootKey+strTypeSubtype,
+									config.get(rootKey+"default"));
+				if (eventCmd == null) {
+					LOGGER.log(Level.SEVERE, "No command configuration for type.subtype "+strTypeSubtype);
+				}
+				// invoke event program for the message
+				try {
+					//new ProcessBuilder(eventCmd).start();
+					Process p = Runtime.getRuntime().exec(eventCmd);
+					LOGGER.info("Execute :"+eventCmd);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					LOGGER.log(Level.SEVERE, "Failed to start '"+eventCmd+"'", e);
+				}
+			} catch (ProtocolTimeoutException e) {
+				// do nothing retry to wait 
+			} catch (ProtocolException e) {
+				throw e;
+			}
+			
+		} while(true);
+
 	}
 	
 }

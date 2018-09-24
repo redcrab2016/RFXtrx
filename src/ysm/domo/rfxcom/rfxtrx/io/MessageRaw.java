@@ -205,7 +205,7 @@ public class MessageRaw {
 		content[PACKET_LENGTH] = (short) (packetLength & 0xFF);
 	}
 
-	private static String toHexaByte(int value) {
+	public static String toHexaByte(int value) {
 		String result = Integer.toHexString(value & 0xff);
 		if (result.length() == 1) {
 			result = "0" + result;

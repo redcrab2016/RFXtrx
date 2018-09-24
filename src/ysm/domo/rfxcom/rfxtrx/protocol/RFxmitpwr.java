@@ -70,15 +70,35 @@ public enum RFxmitpwr {
 		return description;
 	}
 	
-	public static RFxmitpwr get(short freqId) {
+	public static RFxmitpwr get(short powid) {
 		RFxmitpwr pow = RFxmitpwr.Unknown;
 		for (RFxmitpwr apow: RFxmitpwr.values()) {
-			if (apow.get() == freqId) {
+			if (apow.get() == powid) {
 				pow = apow;
 				break;
 			}
 		}
 		return pow;
+	}
+	
+	public static RFxmitpwr get(String strPower) {
+		if (strPower == null) return null;
+		if (strPower.trim().length() == 0) return null;
+		strPower = strPower.toUpperCase().trim();
+		if (strPower.matches("^(\\+|\\-)?[0-9]{1,2}(DBM)?$")) {
+			if (strPower.charAt(0) >= '0' && strPower.charAt(0) <= '9') {
+				strPower = "+" + strPower;
+			}
+			if (!strPower.matches("^.+DBM$")) {
+				strPower += "DBM";
+			}
+			for (RFxmitpwr pow: RFxmitpwr.values()) {
+				if (pow.getDescription().equalsIgnoreCase(strPower)) {
+					return pow;
+				}
+			}
+		}
+		return null;
 	}
 	
 }
