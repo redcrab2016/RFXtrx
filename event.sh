@@ -1,2 +1,4 @@
 #!/bin/bash
-echo "Hello $1" >> /home/edevaux/projects/Raspberry/event.log
+echo "----------------" >> /home/famille/Projects/RfxCom/event.log
+env | grep RFXCOM_ | sort -r >>  /home/famille/Projects/RfxCom/event.log
+ #echo "Hello $1" >> /home/famille/Projects/RfxCom/event.log

@@ -438,6 +438,8 @@ public class Protocol {
 					LOGGER.log(Level.SEVERE, "No command configuration for type.subtype "+strTypeSubtype);
 				}
 				// invoke event program for the message
+				this.executeMessage(msg, eventCmd);
+				/*
 				try {
 					//new ProcessBuilder(eventCmd).start();
 					Process p = Runtime.getRuntime().exec(eventCmd);
@@ -446,6 +448,7 @@ public class Protocol {
 					// TODO Auto-generated catch block
 					LOGGER.log(Level.SEVERE, "Failed to start '"+eventCmd+"'", e);
 				}
+				*/
 			} catch (ProtocolTimeoutException e) {
 				// do nothing retry to wait 
 			} catch (ProtocolException e) {
