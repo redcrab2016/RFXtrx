@@ -23,11 +23,19 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import ysm.domo.rfxcom.rfxtrx.Config;
 import ysm.domo.rfxcom.rfxtrx.io.MessageException;
@@ -197,7 +205,48 @@ public class Protocol {
 	}
 	
 	public MessageRaw transmit(String strMessage) throws ProtocolTimeoutException, ProtocolException {
+		if (	strMessage == null ||
+				strMessage.trim().length() == 0 ||
+				strMessage.indexOf('(')==-1) {
+			LOGGER.info("Ignoring message '" + String.valueOf(strMessage) + "'");
+			return null;
+		}
 		LOGGER.info("Send message : " + strMessage);
+		ScriptEngineManager engineManager =	new ScriptEngineManager();
+		ScriptEngine engine = engineManager.getEngineByName("javascript");
+		try {
+			// eval base script for message generation
+			String scriptName = "ysm/domo/rfxcom/rfxtrx/protocol/generateMessage.js";
+			InputStream inScript = Thread.currentThread().getContextClassLoader().getResourceAsStream(scriptName);
+			InputStreamReader inreader=new InputStreamReader(inScript);
+			JSMessageBean msgBean= new JSMessageBean();
+			engine.put("msg", msgBean);
+			engine.put(ScriptEngine.FILENAME, scriptName);
+			engine.eval(inreader);
+			inreader.close();
+			// eval script given by configuration (extension)
+			String strScriptExtensionPath = config.get("rfxtrx.protocol.script.generatemessage.path");
+			if (strScriptExtensionPath != null ) {
+				File script= new File(strScriptExtensionPath);
+				if (script.exists() && script.isFile() && script.canRead()) {
+					inreader = new InputStreamReader(new FileInputStream(script));
+					engine.put(ScriptEngine.FILENAME, strScriptExtensionPath);
+					engine.eval(inreader);
+					inreader.close();
+				} else {
+					LOGGER.warning("Can't access for execution javascript file '"+strScriptExtensionPath+"'");
+				}
+			}
+			// eval the message
+			 engine.put(ScriptEngine.FILENAME, "InputMessage");
+			 engine.eval(strMessage);
+			 return transmit(msgBean.getType(), msgBean.getSubtype(), msgBean.getData());
+			
+			
+		} catch (ScriptException | IOException e) {
+			LOGGER.log(Level.SEVERE,"Failed to evaluate Incomming message'" + strMessage + "' to transmit",e);
+		}
+			
 		return null;
 	}
 
@@ -404,7 +453,57 @@ public class Protocol {
 			}
 			
 		} while(true);
-
+	}
+	
+	
+	private void executeMessage(MessageRaw msg, String cmd) {
+		try {
+			//new ProcessBuilder(eventCmd).start();
+			String [] env = getEnv(msg);
+			Process p = Runtime.getRuntime().exec(cmd,env);
+			LOGGER.info("Execute :"+cmd);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			LOGGER.log(Level.SEVERE, "Failed to start '"+cmd+"'", e);
+		}
+	}
+	
+	private String [] getEnv(MessageRaw msg) {
+		String [] result = null;
+		Map<String,String> parentEnv = System.getenv();
+		Map<String,String> curEnv = new HashMap<String,String>();
+		for (Entry parentEntry : parentEnv.entrySet()) {
+			curEnv.put(String.valueOf(parentEntry.getKey()), String.valueOf(parentEntry.getValue()));
+		}
+		// Add specific env variable
+		addMessageInfo(msg, curEnv);
+		// transform map into array of String as key=value 
+		result = new String[curEnv.size()];
+		int i=0;
+		for (Entry curEntry : curEnv.entrySet()) {
+			result[i++]=String.valueOf(curEntry.getKey()) + "=" + String.valueOf(curEntry.getValue());
+		}
+		return result;
+	}
+	
+	private void addMessageInfo(MessageRaw msg, Map<String,String> env) {
+		String prefix = config.get("rfxtrx.protocol.event.environementvariable.prefix","RFXCOM_");
+		env.put(prefix+"PACKET_LENGTH", String.valueOf(msg.getPacketLength()));
+		env.put(prefix+"PACKET_TYPE", String.valueOf(msg.getPacketType()));
+		env.put(prefix+"PACKET_SUBTYPE", String.valueOf(msg.getPacketSubtype()));
+		env.put(prefix+"PACKET_SEQUENCENUMBER", String.valueOf(msg.getSequenceNumber()));
+		short[] packetData = msg.getPacketData();
+		env.put(prefix+"PACKET_DATA_LENGTH", String.valueOf(packetData.length));
+		for (int i = 0 ; i< packetData.length ; i++) {
+			env.put(prefix+"PACKET_DATA"+i, String.valueOf(packetData[i]));
+		}
+		RFmsgSubtype subtype = RFmsgSubtype.get(msg.getPacketType(), msg.getPacketSubtype());
+		if (subtype != null) {
+			env.put(prefix+"TYPE_NAME", subtype.getMsgType().toString());
+			env.put(prefix+"SUBTYPE_NAME", subtype.toString());
+			env.put(prefix+"TYPE_DESC", subtype.getMsgType().getDescription());
+			env.put(prefix+"SUBTYPE_DESC", subtype.getDescription());
+		}
 	}
 	
 }
