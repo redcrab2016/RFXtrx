@@ -83,25 +83,28 @@ public class Transport {
 		public void run() {
 			while (! stop) {
 				try {
-					if (in.available()>0) {
+					int i=42;
+					if (/*in.available()>0*/ i == 42) {
 						msg = new MessageRaw(in);
 						synchronized(msgFIFO) {
 							msgFIFO.add(msg);
 						}
 					} else {
+						
 						try {
 							Thread.sleep(100);
 						} catch (InterruptedException e) {
 							// don't care
 						}
+						
 					}
 				} catch (MessageException e) {
 					pumpException = e;
 					stop=true;
-				} catch (IOException e) {
+				} /*catch (IOException e) {
 					pumpException = new MessageException("Message Pump Exception.",e);
 					stop=true;
-				}
+				}*/
 			}
 		}
 		

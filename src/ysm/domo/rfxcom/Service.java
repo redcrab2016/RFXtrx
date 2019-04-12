@@ -7,14 +7,18 @@ import ysm.domo.rfxcom.rfxtrx.io.MessageRaw;
 import ysm.domo.rfxcom.rfxtrx.protocol.Protocol;
 import ysm.domo.rfxcom.rfxtrx.protocol.ProtocolException;
 
-public class Test {
+public class Service {
 
 	public static void main(String[] args) {
 
 		Protocol proto=null;
 		try {
 			// please adapt the file path name to your appropriate config file name path.
-			proto = new Protocol(new Config("/home/famille/Projects/eclipse-workspace/RFXtrx/config.properties"));
+			if (args.length >0) {
+				proto = new Protocol(new Config(args[0] + "/config.properties"));
+			} else {
+				proto = new Protocol(new Config("/home/pi/Projects/RfxCom/eclipsews/RFXtrx/config.properties"));
+			}
 			//System.out.println(proto.getCurrentState().toString());
 			proto.loopInOut();
 			

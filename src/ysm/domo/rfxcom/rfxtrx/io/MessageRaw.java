@@ -256,7 +256,9 @@ public class MessageRaw {
 		if (size < 4)
 			throw new MessageException("Packet length data in stream is too small (min 4, got " + size + ")");
 		packet = new short[size + 1];
+		
 		bpacket = new byte[size];
+		//System.out.println("psize:"+size);
 		packet[0] = (short) size;
 		int readsize;
 		int totalread = 0;
