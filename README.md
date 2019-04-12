@@ -29,7 +29,7 @@ The aim is to be able to use RFXCOM devices (as RFXtrx433E devices in a java env
 
 ### Environment
 - Java + Javac: Oracle or OpenJDK 1.8
-- Kernet module for FTDI USB devices (RFXCOM device seen as **/dev/ttyUSBx**  (with x above or equal to
+- Kernet module for FTDI USB devices (RFXCOM device seen as **/dev/ttyUSBx**  (with x above or equal to 0)
 - User is able to access to **/dev/ttyUSBx** (e.g user has secondary group on 'dialout')
 
 ### Get project
@@ -41,7 +41,7 @@ if your device is not **/dev/ttyUSB0** then you need to change the file **config
 To enable the listening of particular protocol you've to modify the file **config.properties** , the key **rfxtrx.protocol.enable**
 
 ### Compile project
-Execute
+Execute (this project already provide the compiled classes, compilation is needed only if you change the source code)
 
     ./compile.sh
 
