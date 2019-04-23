@@ -84,7 +84,7 @@ public class Transport {
 			while (! stop) {
 				try {
 					int i=42;
-					if (/*in.available()>0*/ i == 42) {
+					if (in.available()>0 && i == 42) {
 						msg = new MessageRaw(in);
 						synchronized(msgFIFO) {
 							msgFIFO.add(msg);
@@ -101,10 +101,10 @@ public class Transport {
 				} catch (MessageException e) {
 					pumpException = e;
 					stop=true;
-				} /*catch (IOException e) {
+				} catch (IOException e) {
 					pumpException = new MessageException("Message Pump Exception.",e);
 					stop=true;
-				}*/
+				} //*/
 			}
 		}
 		

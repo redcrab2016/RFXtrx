@@ -227,6 +227,9 @@ public class MessageRaw {
 		}
 		try {
 			synchronized(out) {
+				//for (int i = 0; i < size + 1; i++) {
+				//	System.out.println("--byte out "+i+" :"+((0xffff & bpacket[i])&0x00ff));
+				//}
 				out.write(bpacket, 0, size + 1);
 				out.flush();
 			}
@@ -258,15 +261,16 @@ public class MessageRaw {
 		packet = new short[size + 1];
 		
 		bpacket = new byte[size];
-		//System.out.println("psize:"+size);
+		//System.out.println("psize in:"+size);
 		packet[0] = (short) size;
 		int readsize;
 		int totalread = 0;
 		int sizetoread=size;
 		try {
 			while ( totalread < size ) {
-				readsize = in.read( bpacket, totalread, sizetoread );
+				readsize = in.read( bpacket, totalread, 1 /*sizetoread*/ );
 				if ( readsize == -1 ) break;
+				//System.out.println("--byte in :"+bpacket[totalread]);
 				sizetoread -= readsize;
 				totalread += readsize;
 			}

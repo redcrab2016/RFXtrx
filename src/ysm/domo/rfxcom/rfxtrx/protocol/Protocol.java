@@ -201,6 +201,12 @@ public class Protocol {
 		} catch (MessageException e) {
 			throw new ProtocolException("failed to create message for control",e);
 		}
+		try {
+			Thread.sleep(2000);
+		} catch (Exception e) {
+			// do nothing
+		}
+
 		return sendMessageAndWaitFor(msg, 1,-1,seq,TIMEOUT);
 	}
 	
