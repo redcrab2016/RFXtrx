@@ -23,6 +23,7 @@ The aim is to be able to use RFXCOM devices (as RFXtrx433E devices in a java env
 
  This project is firstly design to be use in Linux Raspberry Pi java context.
  This Project exist because default RFXCOM public provided tools is targeted for Windows(r) environment.
+ There is no java native library depedencies, it invokes linux command commodities instead (mkfifo, stty ...) to be able to configure and use the serial port
  
 ----------------------------------------------------------------------------                      
 ## Install and Run on PI or other Linux machine
