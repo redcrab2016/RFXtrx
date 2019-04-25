@@ -74,7 +74,7 @@ The available commands are defined in **extension.js** file
 The base command library is defined in file **src/ysm/domo/rfxcom/rfxtrx/protocol/generateMessage.js**
 
 ## The Output : Execute something when a message arrive
-When an message is recieved for a particular protocol enabled (see key **rfxtrx.protocol.enable** in **config.properties**) then the script **event.sh** is invoked with a set of **RFXCOM_*** environment variables
+When a message is recieved for a particular protocol enabled (see key **rfxtrx.protocol.enable** in **config.properties**) then the script **event.sh** is invoked with a set of **RFXCOM_*** environment variables
 You may customized the event.sh script with your own purpose or change the keys **rfxtrx.protocol.event.*** in **config.properties** file to execute another shell script or executable
 
 
