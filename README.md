@@ -1,4 +1,4 @@
-# RFXCOM for java
+# RFXCOM for Java
 
 ----------------------------------------------------------------------------                      
 Software License Agreement                       
@@ -23,6 +23,8 @@ The aim is to be able to use RFXCOM devices (as RFXtrx433E devices in a java env
 
  This project is firstly design to be use in Linux Raspberry Pi java context.
  This Project exist because default RFXCOM public provided tools is targeted for Windows(r) environment.
+ 
+ There is no Java native library dependency, the project invokes standard linux command instead (mkfifo, stty ...) to be able to configure and use the serial port, by this way the program is directly runnable everywhere without any architecture limitation. Therefore the target is "Only Linux alike system, enabled with USB FTDI serial port device, and a Java JVM available"
  
 ----------------------------------------------------------------------------                      
 ## Install and Run on PI or other Linux machine
@@ -71,8 +73,8 @@ example, to Switch On a Chacon power plug on House 'I' address 1
 The available commands are defined in **extension.js** file
 The base command library is defined in file **src/ysm/domo/rfxcom/rfxtrx/protocol/generateMessage.js**
 
-## The Output : Execute something when a message arrive
-When an message is recieved for a particular protocol enabled (see key **rfxtrx.protocol.enable** in **config.properties**) then the script **event.sh** is invoked with a set of **RFXCOM_*** environment variables
+## The Output : Execute something when a message is received
+When a message is recieved for a particular protocol enabled (see key **rfxtrx.protocol.enable** in **config.properties**) then the script **event.sh** is invoked with a set of **RFXCOM_*** environment variables
 You may customized the event.sh script with your own purpose or change the keys **rfxtrx.protocol.event.*** in **config.properties** file to execute another shell script or executable
 
 
