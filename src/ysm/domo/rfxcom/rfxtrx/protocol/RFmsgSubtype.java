@@ -269,9 +269,9 @@ public enum RFmsgSubtype {
 	
 	WATER_SENSORS_RESERVED				(	-1,	RFmsgType.WATER_SENSORS,		0x01,	"reserved"),
 	
-	CARTELECTRONIC_TIC					(	0x15,	RFmsgType.CARTELECTRONIC,		0x01,	"TIC"),
-	CARTELECTRONIC_ENCODER				(	0x11,	RFmsgType.CARTELECTRONIC,		0x02,	"Encoder"),
-	CARTELECTORNIC_LINKY				(	0x15,	RFmsgType.CARTELECTRONIC,		0x03,	"Linky"),
+	CARTELECTRONIC_TIC					(	0x15,	RFmsgType.CARTELECTRONIC,		0x01,	"TIC", new String[] {"id1","id2","id3","id4","id5","contract_type","counter1_0","counter1_1","counter1_2","counter1_3","counter2_0","counter2_1","counter2_2","counter2_3","power_H","power_L","state","signal"}),
+	CARTELECTRONIC_ENCODER				(	0x11,	RFmsgType.CARTELECTRONIC,		0x02,	"Encoder", new String[] {"id1","id2","id3","id4","counter1_0","counter1_1","counter1_2","counter1_3","counter2_0","counter2_1","counter2_2","counter2_3","state","signal"}),
+	CARTELECTORNIC_LINKY				(	0x15,	RFmsgType.CARTELECTRONIC,		0x03,	"Linky", new String[] {"id1","id2","id3","id4","runidx_0","runidx_1","runidx_2","runidx_3","prodidx1_0","prodidx1_1","prodidx1_2","prodidx1_3","currentidx","av_voltage","power_H","power_L","state","signal"}),
 	
 	ASYNC_PORT_CONF						(	0x0B,	RFmsgType.ASYNC_PORT_CONF,		0x01,	"configure Async port")	,
 	
@@ -303,17 +303,24 @@ public enum RFmsgSubtype {
 	RAW_TXRX_TX4TH_PACKET				(	-1,	RFmsgType.RAW_TXRX,				0x00,	"RAW transmit 4th packet"),
 	
 	;
-	RFmsgSubtype(int packetlength, RFmsgType msgType, int subtype, String description) {
+	RFmsgSubtype(int packetlength, RFmsgType msgType, int subtype, String description, String[] datamapping) {
 		this.msgType = msgType;
 		this.subtype = (short)subtype;
 		this.description = description;
 		this.packetlength=packetlength;
+		this.dataMapping=datamapping;
+	}
+	
+	RFmsgSubtype(int packetlength, RFmsgType msgType, int subtype, String description) {
+		this (packetlength,msgType,subtype,description,new String[] {});
 	}
 	
 	private final int packetlength;
 	private final RFmsgType msgType;
 	private final short subtype;
 	private final String description;
+	private final String[] dataMapping;
+	
 	public RFmsgType getMsgType() {
 		return msgType;
 	}
@@ -322,6 +329,11 @@ public enum RFmsgSubtype {
 	}
 	public String getDescription() {
 		return description;
+	}
+	
+	public String[] getMapping() {
+		if (dataMapping.length>0) return dataMapping;
+		return msgType.getMapping();
 	}
 	
 	public int getLength() {

@@ -362,8 +362,15 @@ public class Protocol {
 		return RFXCopyright;
 	}
 	
+	/**
+	 * Service main function
+	 * Read message to transmit in the air from a named pipe
+	 * Execute a process from message received from RFXTrx device
+	 * @throws ProtocolException
+	 */
 	public void loopInOut() throws ProtocolException {
 		MessageRaw msg = null;
+		// if needed , create the named pipe to be used for message sending
 		String pipeInName = config.get("rfxtrx.protocol.input.path");
 		if (pipeInName == null || pipeInName.trim().length() == 0) {
 			throw new ProtocolException("Missing or empty key rfxtrx.protocol.input.path in configuration");
@@ -390,8 +397,11 @@ public class Protocol {
 		InputStream in = null;
 		byte[] buffer = new byte[64000];
 		int bufflen = 0;
-		do {
+		do { // loop between message to send and message to receive
 			
+			// process Input (transmit message in the Air)
+			// read the named pipe, and interpret it 
+			// to generate the message to send 
 			if (in == null) {
 				try {
 					try {
@@ -416,8 +426,6 @@ public class Protocol {
 						}
 						String strMessage = new String( forString);
 						this.transmit(strMessage);
-						//in.close();
-						//in = null;
 						bufflen=0;
 						break;
 					} else {
@@ -430,7 +438,8 @@ public class Protocol {
 				in = null;
 			}
 			
-			
+			// process output (Received message)
+			// by the received message, execute a process
 			try {
 				msg = this.waitFor(-1, -1, -1, 1);
 				LOGGER.info("received message : " + msg.toString());
@@ -445,16 +454,6 @@ public class Protocol {
 				}
 				// invoke event program for the message
 				this.executeMessage(msg, eventCmd);
-				/*
-				try {
-					//new ProcessBuilder(eventCmd).start();
-					Process p = Runtime.getRuntime().exec(eventCmd);
-					LOGGER.info("Execute :"+eventCmd);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					LOGGER.log(Level.SEVERE, "Failed to start '"+eventCmd+"'", e);
-				}
-				*/
 			} catch (ProtocolTimeoutException e) {
 				// do nothing retry to wait 
 			} catch (ProtocolException e) {
@@ -472,7 +471,6 @@ public class Protocol {
 			Process p = Runtime.getRuntime().exec(cmd,env);
 			LOGGER.info("Execute :"+cmd);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			LOGGER.log(Level.SEVERE, "Failed to start '"+cmd+"'", e);
 		}
 	}
@@ -481,7 +479,7 @@ public class Protocol {
 		String [] result = null;
 		Map<String,String> parentEnv = System.getenv();
 		Map<String,String> curEnv = new HashMap<String,String>();
-		for (Entry parentEntry : parentEnv.entrySet()) {
+		for (Entry<String,String> parentEntry : parentEnv.entrySet()) {
 			curEnv.put(String.valueOf(parentEntry.getKey()), String.valueOf(parentEntry.getValue()));
 		}
 		// Add specific env variable
@@ -489,7 +487,7 @@ public class Protocol {
 		// transform map into array of String as key=value 
 		result = new String[curEnv.size()];
 		int i=0;
-		for (Entry curEntry : curEnv.entrySet()) {
+		for (Entry<String,String> curEntry : curEnv.entrySet()) {
 			result[i++]=String.valueOf(curEntry.getKey()) + "=" + String.valueOf(curEntry.getValue());
 		}
 		return result;
@@ -507,6 +505,10 @@ public class Protocol {
 			env.put(prefix+"PACKET_DATA"+i, String.valueOf(packetData[i]));
 		}
 		RFmsgSubtype subtype = RFmsgSubtype.get(msg.getPacketType(), msg.getPacketSubtype());
+		Map<String,Object> firstInterpret = msg.getFirstLevelInterpret();
+		for (Entry<String,Object> entry : firstInterpret.entrySet()) {
+			env.put(prefix + subtype.toString()+"_"+entry.getKey(), entry.getValue().toString());
+		}
 		if (subtype != null) {
 			env.put(prefix+"TYPE_NAME", subtype.getMsgType().toString());
 			env.put(prefix+"SUBTYPE_NAME", subtype.toString());

@@ -23,64 +23,66 @@ package ysm.domo.rfxcom.rfxtrx.protocol;
  *
  */
 public enum RFmsgType {
-	UNDECODED_RF_MESSAGE(	0x03,	"Undecoded RF Message"),
-	LIGHTING1			(	0x10,	"Lighting1"),
-	LIGHTING2			(	0x11,	"Lighting2"),
-	LIGHTING3			(	0x12,	"Lighting3"),
-	LIGHTING4			(	0x13,	"Lighting4"),
-	LIGHTING5			(	0x14,	"Lighting5"),
-	LIGHTING6			(	0x15,	"Lighting6"),
-	CHIME				(	0x16,	"Chime"),
-	FAN					(	0x17,	"Fan" ),
-	CURTAIN1			(	0x18,	"Curtain1"),
-	BLINDS1				(	0x19,	"Blinds1"),
-	RFY					(	0x1A,	"RFY"),
-	HOME_CONFORT		(	0x1B,	"Home Confort"),
-	EDISIO				(	0x1C,	"Edisio"),
-	HONEYWELL_ACTIVLINK	(	0x1D,	"Honeywell ActivLink(TM)"),
-	FUNKBUS				(	0x1E,	"FunkBus"),
-	SECURITY1			(	0x20,	"Security1"),
-	SECURITY2			(   0x21,	"Security2"),
-	CAMERA1				(	0x28,	"Camera1"),
-	REMOTE_CONTROL_IR	(	0x30,	"Remote control and IR"),
-	THERMOSTAT1			(	0x40,	"Thermostat1"),
-	THERMOSTAT2			(	0x41,	"Thermostat2"),
-	THERMOSTAT3			(	0x42,	"Thermostat3"),
-	THERMOSTAT4			(	0x43,	"Thermostat4"),
-	RADIATOR1			(	0x48,	"Radiator1"),
-	BBQ_TEMP_SENSORS	(	0x4E,	"BBQ Temperature sensors"),
-	TEMP_RAIN_SENSORS	(	0x4F,	"Temperature and rain sensors"),
-	TEMP_SENSORS		(	0x50,	"Temperature sensors"),
-	HUM_SENSORS			(	0x51,	"Humidity sensors"),
-	TEMP_HUM_SENSORS	(	0x52,	"Temperature and humidity sensors"),
-	BARO_SENSORS		(	0x53,	"Barometric sensors"),
-	TEMP_HUM_BARO_SENSORS(	0x54,	"Temperature, humidity and barometric sensors"),
-	RAIN_SENSORS		(	0x55,	"Rain sensors"),
-	WIND_SENSORS		(	0x56,	"Wind sensors"),
-	UV_SENSORS			(	0x57,	"UV sensors"),
-	DATE_TIME_SENSORS	(	0x58,	"Date/Time sensors"),
-	CURRENT_SENSORS		(	0x59,	"Current sensors"),
-	ENERGY_SENSORS		(	0x5A,	"Energy usage sensors"),
-	CURRENT_ENERGY_SENSORS(	0x5B,	"Current + ENERGY sensors"),
-	POWER_SENSORS		(	0x5C,	"Power sensors"),
-	WEIGHTING_SCALE		(	0x5D,	"Weighting scale"),
-	GAS_SENSORS			(	0x5E,	"gas usage sensors"),
-	WATER_SENSORS		(	0x5F,	"Water usage sensors"),
-	CARTELECTRONIC		(	0x60,	"CARTELECTRONIC"),
-	ASYNC_PORT_CONF		(	0x61,	"ASYNC port configuration"),
-	ASYNC_TXRX			(	0x62,	"Async transmit/receive"),
-	RFXSENSOR			(	0x70,	"RFXsensor"),
-	RFXMETER			(	0x71,	"RFXMeter"),
-	FS20				(	0x72,	"FS20"),
-	RAW_TXRX			(	0x7F,	"RAW transmit/receive")
+	UNDECODED_RF_MESSAGE(	0x03,	"Undecoded RF Message", new String[] {"msg1","msg2","msg3","msg4","msg5","msg6","msg7","msg8","msg9","msg10","msg11","msg12","msg13","msg14","msg15","msg16","msg17","msg18","msg19","msg20","msg21","msg22","msg23","msg24","msg25","msg26","msg27","msg28","msg29","msg30","msg31","msg32","msg33"}),
+	LIGHTING1			(	0x10,	"Lighting1", new String[] {"housecode","unitcode","cmnd","signal"}),
+	LIGHTING2			(	0x11,	"Lighting2", new String[] {"id1","id2","id3","id4","unitcode","cmnd","level","signal"}),
+	LIGHTING3			(	0x12,	"Lighting3", new String[] {"system","channel8_1","channel10_9","cmnd","signal"}),
+	LIGHTING4			(	0x13,	"Lighting4", new String[] {"cmd1","cmd2","cmd3","pulseHigh","pulseLow","signal"}),
+	LIGHTING5			(	0x14,	"Lighting5", new String[] {"id1","id2","id3","unitcode","cmnd","level","signal"}),
+	LIGHTING6			(	0x15,	"Lighting6", new String[] {"id1","id2","groupcode","unitcode","cmnd","cmndseqnbr","seqnbr2","signal"}),
+	CHIME				(	0x16,	"Chime", new String[] {"id1","id2","sound","signal"}),
+	FAN					(	0x17,	"Fan", new String[] {"id1","id2","id3","cmnd","signal"} ),
+	CURTAIN1			(	0x18,	"Curtain1", new String[] {"housecode","unitcode","cmnd","signal"}),
+	BLINDS1				(	0x19,	"Blinds1", new String [] {"id1","id2","id3","id4unitcode","cmnd","signal"}),
+	RFY					(	0x1A,	"RFY", new String[] {"id1","id2","id3","unitcode","cmnd","rfu1","rfu2","rfu3","signal"}),
+	HOME_CONFORT		(	0x1B,	"Home Confort", new String[] {"id1","id2","id3","housecode","unitcode","cmnd","rfu1","rfu2","signal"}),
+	EDISIO				(	0x1C,	"Edisio", new String[] {"id1","id2","id3","id4","unitcode","cmnd","level","R","G","B","maxrepeat","repeatcnt","signal"}),
+	HONEYWELL_ACTIVLINK	(	0x1D,	"Honeywell ActivLink(TM)", new String[] {"id1","id2","id3","id4","id5","id6","rfu","signal"}),
+	FUNKBUS				(	0x1E,	"FunkBus", new String[] {"id1","id2","groupcode","unitcode","cmnd","cmndtime","devtype","signal"}),
+	SECURITY1			(	0x20,	"Security1", new String[] {"id1", "id2", "id3", "status","signal"}),
+	SECURITY2			(   0x21,	"Security2", new String[] {"id1","id2","id3","id4","id5","id6","id7","id8","id9","id10","id11","id12","id13","id14","id15","id16","id17","id18","id19","id20","id21","id22","id23","id24","signal"}),
+	CAMERA1				(	0x28,	"Camera1", new String[] {"housecode","cmnd","signal"}),
+	REMOTE_CONTROL_IR	(	0x30,	"Remote control and IR", new String[] {"id","cmnd","signal4_toggle1_cmndtype3"}),
+	THERMOSTAT1			(	0x40,	"Thermostat1", new String[] {"id1","id2","temperature","set_point","mode1_filler5_status2","signal"}),
+	THERMOSTAT2			(	0x41,	"Thermostat2", new String[] {"unitcode","cmnd","signal"}),
+	THERMOSTAT3			(	0x42,	"Thermostat3", new String[] {"unitcode1","unitcode2","unitcode3","cmnd","signal"}),
+	THERMOSTAT4			(	0x43,	"Thermostat4", new String[] {"unitcode1","unitcode3","unitcode3","beep","fan1_speed","fan3_speed_fan2_speed","flame_power","mode","signal"}),
+	RADIATOR1			(	0x48,	"Radiator1", new String[] {"id1","id2","id3","id4","unitcode","cmnd","temperature","tempPoint5","signal"}),
+	BBQ_TEMP_SENSORS	(	0x4E,	"BBQ Temperature sensors",new String[] {"id1","id2","sensor1high","sensor1low","sensor2high","sensor2low","signal"}),
+	TEMP_RAIN_SENSORS	(	0x4F,	"Temperature and rain sensors", new String[] {"id1","id2","sign1_tempraturehigh","temperaturelow","raintotal1","raintotal2","signal"}),
+	TEMP_SENSORS		(	0x50,	"Temperature sensors", new String[] {"id1","id2","sign1_temperaturehigh","temperaturelow","signal"}),
+	HUM_SENSORS			(	0x51,	"Humidity sensors", new String[] {"id1","id2","humidity","humidity_status","signal"}),
+	TEMP_HUM_SENSORS	(	0x52,	"Temperature and humidity sensors", new String[] {"id1","id2","sign1_temperaturehigh","temperaturelow","humidity","humidity_status","signal"}),
+	BARO_SENSORS		(	0x53,	"Barometric sensors", new String[] {"id1","id2","baro1","baro2","forecast","signal"}),
+	TEMP_HUM_BARO_SENSORS(	0x54,	"Temperature, humidity and barometric sensors", new String[] {"id1","id2","sign1_temperaturehigh","temperaturelow","humidity","humidity_status","baro1","baro2","forecast","signal"}),
+	RAIN_SENSORS		(	0x55,	"Rain sensors", new String[] {"id1","id2","rainratehigh","rainratelow","raintotal1","raintotal2","raintotal3","signal"}),
+	WIND_SENSORS		(	0x56,	"Wind sensors", new String[] {"id1","id2","directionhigh","directionlow","av_speedhigh","av_speedlow","gusthigh","gustlow","sign1_temperaturehigh","temperaturelow","sign1_chillhigh","chilllow","signal"}),
+	UV_SENSORS			(	0x57,	"UV sensors", new String[] {"id1","id2","uv","sign1_temperaturehigh","temperaturelow","signal"}),
+	DATE_TIME_SENSORS	(	0x58,	"Date/Time sensors", new String[] {"id1","id2","yy","mm","dd","dow","hr","min","sec","signal"}),
+	CURRENT_SENSORS		(	0x59,	"Current sensors", new String[] {"id1","id2","count","ch1_high","ch1_low","ch2_high","ch2_low","ch3_high","ch3_low","sinal"}),
+	ENERGY_SENSORS		(	0x5A,	"Energy usage sensors", new String[] {"id1","id2","count","instant1","instant2","instant3","instant4","total1","total2","total3","total4","total5","total6","signal"}),
+	CURRENT_ENERGY_SENSORS(	0x5B,	"Current + ENERGY sensors", new String[] {"id1","id2","count","ch1_high","ch1_low","ch2_high","ch2_low","ch3_high","ch3_low","total1","total2","total3","total4","total5","total6","signal"}),
+	POWER_SENSORS		(	0x5C,	"Power sensors", new String[] {"id1","id2","voltage","currentH","currentL","powerH","powerL","energyH","energyL","pf","freq","signal"}),
+	WEIGHTING_SCALE		(	0x5D,	"Weighting scale", new String[] {"id1","id2","weighthigh","weightlow","signal"}),
+	GAS_SENSORS			(	0x5E,	"gas usage sensors", new String[] {}),
+	WATER_SENSORS		(	0x5F,	"Water usage sensors", new String[] {}),
+	CARTELECTRONIC		(	0x60,	"CARTELECTRONIC", new String[]{} ),
+	ASYNC_PORT_CONF		(	0x61,	"ASYNC port configuration", new String[] {"cmnd","baudrate","parity","databits","stopbits","polarity","filler1","filler2"}),
+	ASYNC_TXRX			(	0x62,	"Async transmit/receive", new String[] {}),
+	RFXSENSOR			(	0x70,	"RFXsensor", new String[] {"id","msg1","msg2","signal"}),
+	RFXMETER			(	0x71,	"RFXMeter", new String[] {"id1","id2","count1","count2","count3","count4","signal"}),
+	FS20				(	0x72,	"FS20", new String[] {"hc1","hc2","addr","cmd1","cmd2","signal"}),
+	RAW_TXRX			(	0x7F,	"RAW transmit/receive", new String[] {"repeat"})
 	;
-	RFmsgType(int msgType, String description) {
+	RFmsgType(int msgType, String description, String[] datamapping) {
 		this.msgType = (short)msgType;
 		this.description = description;
+		this.dataMapping = datamapping;
 	}
-	
+		
 	private final short msgType;
 	private final String description;
+	private final String[] dataMapping;
 	
 	public short getMsgType() {
 		return msgType;
@@ -88,6 +90,10 @@ public enum RFmsgType {
 	
 	public String getDescription() {
 		return description;
+	}
+	
+	public String[] getMapping() {
+		return dataMapping;
 	}
 	
 	public static RFmsgType get(int msgType) {

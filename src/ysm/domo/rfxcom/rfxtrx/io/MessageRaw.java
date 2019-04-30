@@ -21,6 +21,10 @@ package ysm.domo.rfxcom.rfxtrx.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import ysm.domo.rfxcom.rfxtrx.protocol.RFmsgSubtype;
 
 /**
  * @author edevaux
@@ -28,11 +32,11 @@ import java.io.OutputStream;
  */
 public class MessageRaw {
 
-	private final static int PACKET_DATA = 4;
 	private final static int PACKET_LENGTH = 0;
-	private final static int PACKET_SUBTYPE = 2;
 	private final static int PACKET_TYPE = 1;
+	private final static int PACKET_SUBTYPE = 2;
 	private final static int SEQUENCE_NUMBER = 3;
+	private final static int PACKET_DATA = 4;
     private long createtime;
 	private short[] content;
 
@@ -58,6 +62,22 @@ public class MessageRaw {
 		setPacket(mr.content);
 	}
 
+	public Map<String,Object> getFirstLevelInterpret() {
+		RFmsgSubtype subtype = RFmsgSubtype.get(getPacketType(), getPacketSubtype());
+		Map<String,Object> result = new HashMap<String,Object>();
+		if (subtype != null) {
+			String [] mapping = subtype.getMapping();
+			int index=PACKET_DATA;
+			for (String key : mapping) {
+				if (index >=content.length) break;
+				short value = content[index];
+				result.put(key, value);
+				index++;
+			}
+		}
+		return result;
+	}
+	
 	public MessageRaw(short[] packet) throws MessageException {
 		this();
 		setPacket(packet);
