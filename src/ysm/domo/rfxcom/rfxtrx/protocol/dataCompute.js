@@ -64,6 +64,111 @@ function command() {
 		if (cmnd == 0x19) return "level 9";
 		if (cmnd == 0x1A) return "Off";
 		if (cmnd == 0x1C) return "Program";
+	} else if (msgraw.getPacketType() == 0x14){ // Lighting5
+		if (	msgraw.getPacketSubtype() == 0x00 ||
+				msgraw.getPacketSubtype() == 0x01 ||
+				msgraw.getPacketSubtype() == 0x02 ||
+				msgraw.getPacketSubtype() == 0x07 ||
+				msgraw.getPacketSubtype() == 0x0F) 
+		{
+			if (cmnd == 0x00) return "Off";
+			if (cmnd == 0x01) return "On";
+			if (cmnd == 0x02 && msgraw.getPacketSubtype()!=0x01) return "Group Off";
+			if (cmnd == 0x02 && msgraw.getPacketSubtype()==0x01) return "Learn";
+			if (cmnd == 0x03 && msgraw.getPacketSubtype()!=0x00) return "Group On";
+			if (cmnd == 0x03 && msgraw.getPacketSubtype()==0x00) return "mood1";
+			if (cmnd == 0x04) return "mood2";
+			if (cmnd == 0x05) return "mood3";
+			if (cmnd == 0x06) return "mood4";
+			if (cmnd == 0x07) return "mood5";
+			if (cmnd == 0x08) return "reserved";
+			if (cmnd == 0x09) return "reserved";
+			if (cmnd == 0x0A) return "unlock";
+			if (cmnd == 0x0B) return "lock";
+			if (cmnd == 0x0C) return "all lock";
+			if (cmnd == 0x0D) return "close (inline relay)";
+			if (cmnd == 0x0E) return "stop (inline relay)";
+			if (cmnd == 0x0F) return "open (inline relay)";
+			if (cmnd == 0x10) return "set level";
+			if (cmnd == 0x11) return "Colour Palette";
+			if (cmnd == 0x12) return "Colour Tone";
+			if (cmnd == 0x13) return "Colour Cycle";
+			return null; // ignore this value
+		} else if ( msgraw.getPacketSubtype() == 0x03 ||
+					msgraw.getPacketSubtype() == 0x10) 
+		{
+			if (cmnd == 0x00) return "Power";
+			if (cmnd == 0x01) return "Light";
+			if (cmnd == 0x02) return "Bright";
+			if (cmnd == 0x03) return "Dim";
+			if (cmnd == 0x04) return "100%";
+			if (cmnd == 0x05) return "50%";
+			if (cmnd == 0x06) return "25%";
+			if (cmnd == 0x07) return "Mode+";
+			if (cmnd == 0x08) return "Speed-";
+			if (cmnd == 0x09) return "Speed+";
+			if (cmnd == 0x0A) return "Mode-";
+		} else if (msgraw.getPacketSubtype() == 0x06 ||
+				msgraw.getPacketSubtype() == 0x08 ||
+				msgraw.getPacketSubtype() == 0x0B ) 
+		{
+			if (cmnd == 0x00) return "Off";
+			if (cmnd == 0x01) return "On";
+			if (cmnd == 0x02) return "Bright";
+			if (cmnd == 0x03) return "Dim";
+			if (cmnd == 0x04) return "Color+";
+			if (cmnd == 0x05) return "Color-";
+			if (cmnd >= 0x06) return "Select color"+(cmnd-5);
+			return null; // ignore this value
+		} else if (msgraw.getPacketSubtype() == 0x05) {
+			if (cmnd == 0x00) return "Group Off";
+			if (cmnd == 0x01) return "Toggle Gang1";
+			if (cmnd == 0x02) return "Toggle Gang2/Bright";
+			if (cmnd == 0x03) return "Toggle Gang3/Dim";
+			return null; // ignore this value
+		} else if (msgraw.getPacketSubtype() == 0x0A) {
+			if (cmnd == 0x00) return "Group Off";
+			if (cmnd == 0x01) return "Toggle 1";
+			if (cmnd == 0x02) return "Toggle 2";
+			if (cmnd == 0x03) return "Toggle 3";
+			if (cmnd == 0x04) return "Toggle 4";
+			if (cmnd == 0x05) return "Toggle 5";
+			if (cmnd == 0x06) return "Toggle 6";
+			if (cmnd == 0x07) return "Toggle 7";
+			if (cmnd == 0x08) return "Bright 7";
+			if (cmnd == 0x09) return "Dim 7";
+			if (cmnd == 0x0A) return "Toggle 8";
+			if (cmnd == 0x0B) return "Toggle 9";
+			if (cmnd == 0x0C) return "Bright 9";
+			if (cmnd == 0x0D) return "Dim 9";
+			if (cmnd == 0x0E) return "Toggle 10";
+			if (cmnd == 0x0F) return "Scene1";
+			if (cmnd == 0x10) return "Scene2";
+			if (cmnd == 0x11) return "Scene3";
+			if (cmnd == 0x12) return "Scene4";
+			if (cmnd == 0x13) return "OK/Set";
+			return null; // ignore this value
+		}else if (msgraw.getPacketSubtype() == 0x0C) {
+			if (cmnd == 0x00) return "Power";
+			if (cmnd == 0x01) return "Bright";
+			if (cmnd == 0x02) return "Dim";
+			if (cmnd == 0x03) return "100%";
+			if (cmnd == 0x04) return "80%";
+			if (cmnd == 0x05) return "60%";
+			if (cmnd == 0x06) return "40%";
+			if (cmnd == 0x07) return "20%";
+			if (cmnd == 0x08) return "10%";
+			return null; // ignore this value
+		}else if (msgraw.getPacketSubtype() == 0x0D) {
+			if (cmnd == 0x00) return "Toggle";
+			return null; // ignore this value
+		}
+	} else if (msgraw.getPacketType() == 0x15) { // Lighting 6
+		if (cmnd == 0x00) return "On";
+		if (cmnd == 0x01) return "Off";
+		if (cmnd == 0x02) return "group On";
+		if (cmnd == 0x03) return "group Off";
+		
 	} else {
 		return null; // ignore this value
 	}
@@ -78,6 +183,10 @@ function id1_4() {
 
 function id1_3() {
 	return (id3 + id2 * 256 + id1 * 65536)| 0;
+}
+
+function id1_2() {
+	return ( id2 * id1 * 256)| 0;
 }
 
 
