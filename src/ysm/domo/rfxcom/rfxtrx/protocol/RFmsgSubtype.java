@@ -18,6 +18,9 @@
 //----------------------------------------------------------------------------- 
 package ysm.domo.rfxcom.rfxtrx.protocol;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum RFmsgSubtype {
 	UNDECODED_RF_MESSAGE_AC				(	-1,	RFmsgType.UNDECODED_RF_MESSAGE,	0x00,	"ac"),
 	UNDECODED_RF_MESSAGE_ARC			(	-1,	RFmsgType.UNDECODED_RF_MESSAGE,	0x01,	"arc"),
@@ -269,9 +272,12 @@ public enum RFmsgSubtype {
 	
 	WATER_SENSORS_RESERVED				(	-1,	RFmsgType.WATER_SENSORS,		0x01,	"reserved"),
 	
-	CARTELECTRONIC_TIC					(	0x15,	RFmsgType.CARTELECTRONIC,		0x01,	"TIC", new String[] {"id1","id2","id3","id4","id5","contract_type","counter1_0","counter1_1","counter1_2","counter1_3","counter2_0","counter2_1","counter2_2","counter2_3","power_H","power_L","state","signal"}),
-	CARTELECTRONIC_ENCODER				(	0x11,	RFmsgType.CARTELECTRONIC,		0x02,	"Encoder", new String[] {"id1","id2","id3","id4","counter1_0","counter1_1","counter1_2","counter1_3","counter2_0","counter2_1","counter2_2","counter2_3","state","signal"}),
-	CARTELECTORNIC_LINKY				(	0x15,	RFmsgType.CARTELECTRONIC,		0x03,	"Linky", new String[] {"id1","id2","id3","id4","runidx_0","runidx_1","runidx_2","runidx_3","prodidx1_0","prodidx1_1","prodidx1_2","prodidx1_3","currentidx","av_voltage","power_H","power_L","state","signal"}),
+	CARTELECTRONIC_TIC					(	0x15,	RFmsgType.CARTELECTRONIC,		0x01,	"TIC", 
+			new String[] {"id1","id2","id3","id4","id5","contract_type","counter1_0","counter1_1","counter1_2","counter1_3","counter2_0","counter2_1","counter2_2","counter2_3","power_H","power_L","state","signal"}),
+	CARTELECTRONIC_ENCODER				(	0x11,	RFmsgType.CARTELECTRONIC,		0x02,	"Encoder", 
+			new String[] {"id1","id2","id3","id4","counter1_0","counter1_1","counter1_2","counter1_3","counter2_0","counter2_1","counter2_2","counter2_3","state","signal"}),
+	CARTELECTORNIC_LINKY				(	0x15,	RFmsgType.CARTELECTRONIC,		0x03,	"Linky", 
+			new String[] {"id1","id2","id3","id4","runidx_0","runidx_1","runidx_2","runidx_3","prodidx1_0","prodidx1_1","prodidx1_2","prodidx1_3","currentidx","av_voltage","power_H","power_L","state","signal"}),
 	
 	ASYNC_PORT_CONF						(	0x0B,	RFmsgType.ASYNC_PORT_CONF,		0x01,	"configure Async port")	,
 	
@@ -303,16 +309,25 @@ public enum RFmsgSubtype {
 	RAW_TXRX_TX4TH_PACKET				(	-1,	RFmsgType.RAW_TXRX,				0x00,	"RAW transmit 4th packet"),
 	
 	;
-	RFmsgSubtype(int packetlength, RFmsgType msgType, int subtype, String description, String[] datamapping) {
+	RFmsgSubtype(int packetlength, RFmsgType msgType, int subtype, String description, String[] datamapping, Map<String,String> datacompute) {
 		this.msgType = msgType;
 		this.subtype = (short)subtype;
 		this.description = description;
 		this.packetlength=packetlength;
 		this.dataMapping=datamapping;
+		this.dataCompute = datacompute;
 	}
 	
 	RFmsgSubtype(int packetlength, RFmsgType msgType, int subtype, String description) {
-		this (packetlength,msgType,subtype,description,new String[] {});
+		this (packetlength,msgType,subtype,description,new String[] {},new HashMap<String,String>());
+	}
+
+	RFmsgSubtype(int packetlength, RFmsgType msgType, int subtype, String description, String[] datamapping) {
+		this (packetlength,msgType,subtype,description,datamapping,new HashMap<String,String>());
+	}
+
+	RFmsgSubtype(int packetlength, RFmsgType msgType, int subtype, String description, Map<String,String> datacompute) {
+		this (packetlength,msgType,subtype,description,new String[] {},datacompute);
 	}
 	
 	private final int packetlength;
@@ -320,6 +335,7 @@ public enum RFmsgSubtype {
 	private final short subtype;
 	private final String description;
 	private final String[] dataMapping;
+	private final Map<String,String> dataCompute;
 	
 	public RFmsgType getMsgType() {
 		return msgType;
@@ -329,6 +345,13 @@ public enum RFmsgSubtype {
 	}
 	public String getDescription() {
 		return description;
+	}
+	
+	public Map<String,String> getCompute() {
+		Map<String,String> result= new HashMap<String,String>();
+		result.putAll(msgType.getCompute());
+		result.putAll(dataCompute);
+		return result;
 	}
 	
 	public String[] getMapping() {

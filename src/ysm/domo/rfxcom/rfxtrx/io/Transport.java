@@ -70,6 +70,10 @@ public class Transport {
 			this.stop = true;
 		}
 		
+		public boolean isStopped() {
+			return this.stop;
+		}
+		
 		public boolean hasMessage() throws MessageException {
 			if (stop && pumpException!= null ) throw pumpException;
 			boolean hasMsg = false;
@@ -87,7 +91,7 @@ public class Transport {
 					if (in.available()>0 && i == 42) {
 						msg = new MessageRaw(in);
 						synchronized(msgFIFO) {
-							msgFIFO.add(msg);
+							if (!stop)	msgFIFO.add(msg);
 						}
 					} else {
 						
@@ -134,7 +138,11 @@ public class Transport {
 		return receiveMessage(blocking,0);
 	}
 	
-	
+	public boolean isStopped() {
+		if (pump == null) return true;
+		if (pumpThread == null) return true;
+		return pump.isStopped();
+	}
 	
 	public MessageRaw receiveMessage(boolean blocking,int timeoutmilli) throws TransportTimeoutException,TransportException  {
 		if (!blocking) {

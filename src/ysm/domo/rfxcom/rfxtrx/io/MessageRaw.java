@@ -18,12 +18,24 @@
 //----------------------------------------------------------------------------- 
 package ysm.domo.rfxcom.rfxtrx.io;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
+import ysm.domo.rfxcom.rfxtrx.protocol.JSMessageBean;
+import ysm.domo.rfxcom.rfxtrx.protocol.Protocol;
 import ysm.domo.rfxcom.rfxtrx.protocol.RFmsgSubtype;
 
 /**
@@ -31,7 +43,7 @@ import ysm.domo.rfxcom.rfxtrx.protocol.RFmsgSubtype;
  * RFXtrx raw message class
  */
 public class MessageRaw {
-
+	private static final Logger LOGGER = Logger.getLogger( MessageRaw.class.getName() );
 	private final static int PACKET_LENGTH = 0;
 	private final static int PACKET_TYPE = 1;
 	private final static int PACKET_SUBTYPE = 2;
@@ -68,14 +80,56 @@ public class MessageRaw {
 		if (subtype != null) {
 			String [] mapping = subtype.getMapping();
 			int index=PACKET_DATA;
+			int cntlength=getPacketLength()+1;
 			for (String key : mapping) {
-				if (index >=content.length) break;
+				if (index >=cntlength || index >=content.length) break;
 				short value = content[index];
 				result.put(key, value);
 				index++;
 			}
 		}
 		return result;
+	}
+	
+	public Map<String,Object> getSecondLevelInterpret() {
+		RFmsgSubtype subtype = RFmsgSubtype.get(getPacketType(), getPacketSubtype());
+		Map<String,Object> result = getFirstLevelInterpret();
+		Map<String,Object> tmpResult = new HashMap<String,Object>();
+		if (subtype != null) {
+			Map<String,String> compute= subtype.getCompute();
+			for (Entry<String,String> entry: compute.entrySet()) {
+				String key = entry.getKey();
+				String computeScript = entry.getValue();
+				Object resultScript="NoValue";
+				// execute script
+				ScriptEngineManager engineManager =	new ScriptEngineManager();
+				ScriptEngine engine = engineManager.getEngineByName("javascript");
+				try {
+					// eval base script for message generation
+					String scriptName = "ysm/domo/rfxcom/rfxtrx/protocol/dataCompute.js";
+					InputStream inScript = Thread.currentThread().getContextClassLoader().getResourceAsStream(scriptName);
+					InputStreamReader inreader=new InputStreamReader(inScript);
+					engine.put("msgraw", this);
+					for (Entry<String,Object> entry1stInterpret: result.entrySet()) {
+						engine.put(entry1stInterpret.getKey(), entry1stInterpret.getValue());
+					}
+					engine.put(ScriptEngine.FILENAME, scriptName);
+					engine.eval(inreader);
+					inreader.close();
+					// eval the message
+					 engine.put(ScriptEngine.FILENAME, "dataCompute");
+					 resultScript = engine.eval(computeScript);
+				} catch (ScriptException | IOException e) {
+					resultScript = "Error-"+e.getMessage();
+					LOGGER.log(Level.SEVERE,"Failed to execute compute data script '" + computeScript + "' ",e);
+				}
+				// get the result of the execution to set into resultScript local variable
+				if (resultScript != null) tmpResult.put(key,resultScript);
+			} // end for each data to compute
+			result.putAll(tmpResult);
+		}
+		return result;
+		
 	}
 	
 	public MessageRaw(short[] packet) throws MessageException {
@@ -181,6 +235,14 @@ public class MessageRaw {
 		content[SEQUENCE_NUMBER] = (short) (sequenceNumber & 0xFF);
 	}
 
+	public String toHexa() {
+		StringBuffer sb = new StringBuffer();
+		for (int i =0 ; i <= getPacketLength(); i++) {
+			sb.append(toHexaByte(content[i]));
+		}
+		return sb.toString();
+	}
+	
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(getStringByte("PacketLength", getPacketLength()));
@@ -281,18 +343,33 @@ public class MessageRaw {
 		packet = new short[size + 1];
 		
 		bpacket = new byte[size];
-		//System.out.println("psize in:"+size);
 		packet[0] = (short) size;
 		int readsize;
 		int totalread = 0;
-		int sizetoread=size;
+		//int sizetoread=size;
 		try {
+			boolean waiting=false;
+			long startWait = 0;//System.currentTimeMillis();
 			while ( totalread < size ) {
-				readsize = in.read( bpacket, totalread, 1 /*sizetoread*/ );
-				if ( readsize == -1 ) break;
-				//System.out.println("--byte in :"+bpacket[totalread]);
-				sizetoread -= readsize;
-				totalread += readsize;
+				if (in.available()!=0)
+				{
+					waiting=false;
+					readsize = in.read( bpacket, totalread, 1 /*sizetoread*/ );
+					if ( readsize == -1 ) break;
+					//sizetoread -= readsize;
+					totalread += readsize;
+				} else {
+					if (!waiting) {
+						waiting= true;
+						startWait = System.currentTimeMillis();
+					} else {
+						long waitDelay= System.currentTimeMillis()- startWait;
+						if (waitDelay > 1000*5) { // wait 5 seconds maximum 
+							throw new MessageException("Too slow or too long wait for message data to be received.");
+						}
+					}
+					
+				}
 			}
 			readsize = totalread;
 		} catch (IOException e) {

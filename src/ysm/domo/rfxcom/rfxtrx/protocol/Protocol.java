@@ -53,6 +53,7 @@ public class Protocol {
 	private static final int TIMEOUT=5000;
 	private static final int MAXAGE=10000;
 	private Transport transport;
+	private boolean shutdown;
 	private Queue<MessageRaw> messageQueue;
 	private AtomicInteger controlSequence;
 	private AtomicInteger rxtxSequence;
@@ -64,16 +65,33 @@ public class Protocol {
 	 */
 	public Protocol(Config config) throws ProtocolException {
 		this.config = config;
+		init();
+	}
+	
+	/** 
+	 * initialize the protocol
+	 * @throws ProtocolException
+	 */
+	public void init() throws ProtocolException {
 		transport = null;
 		messageQueue = null;
+		shutdown = false;
 		try {
 			start();
 		}	catch(ProtocolException e) {
 			stop();
 			throw e;
 		}
+		
 	}
 	
+	/**
+	 * Does the Protocol execution is requested to be shut down
+	 * @return
+	 */
+	public boolean shutdown() {
+		return shutdown;
+	}
 	
 	public void start() throws ProtocolException {
 		if (transport != null) {
@@ -92,6 +110,9 @@ public class Protocol {
 		}
 	}
 	
+	/**
+	 * Stop the transport execution
+	 */
 	public void stop() {
 		if (transport == null) return;
 		transport.stop();
@@ -99,6 +120,10 @@ public class Protocol {
 		transport = null;
 	}
 	
+	/**
+	 * Do a Thread sleep
+	 * @param milliseconds
+	 */
 	private static void pause(int milliseconds) {
 		try {
 			Thread.sleep(milliseconds);
@@ -398,7 +423,7 @@ public class Protocol {
 		byte[] buffer = new byte[64000];
 		int bufflen = 0;
 		do { // loop between message to send and message to receive
-			
+			if (transport.isStopped()) break; // transport must be running
 			// process Input (transmit message in the Air)
 			// read the named pipe, and interpret it 
 			// to generate the message to send 
@@ -425,7 +450,12 @@ public class Protocol {
 							forString[i] = buffer[i];
 						}
 						String strMessage = new String( forString);
-						this.transmit(strMessage);
+						if (strMessage.equalsIgnoreCase(config.get("rfxtrx.protocol.input.stopcommand","servicestop"))) {
+							transport.stop();
+							shutdown = true;
+						} else {
+							this.transmit(strMessage);
+						}
 						bufflen=0;
 						break;
 					} else {
@@ -455,12 +485,20 @@ public class Protocol {
 				// invoke event program for the message
 				this.executeMessage(msg, eventCmd);
 			} catch (ProtocolTimeoutException e) {
+				
 				// do nothing retry to wait 
 			} catch (ProtocolException e) {
 				throw e;
 			}
 			
 		} while(true);
+		if (in != null)
+			try {
+				in.close();
+			} catch (IOException e) {
+				LOGGER.warning("Failed to close input named pipe:"+e.getMessage());
+				// don't care
+			}
 	}
 	
 	
@@ -495,6 +533,7 @@ public class Protocol {
 	
 	private void addMessageInfo(MessageRaw msg, Map<String,String> env) {
 		String prefix = config.get("rfxtrx.protocol.event.environementvariable.prefix","RFXCOM_");
+		env.put(prefix+"PACKET_HEXA",msg.toHexa());
 		env.put(prefix+"PACKET_LENGTH", String.valueOf(msg.getPacketLength()));
 		env.put(prefix+"PACKET_TYPE", String.valueOf(msg.getPacketType()));
 		env.put(prefix+"PACKET_SUBTYPE", String.valueOf(msg.getPacketSubtype()));
@@ -505,9 +544,9 @@ public class Protocol {
 			env.put(prefix+"PACKET_DATA"+i, String.valueOf(packetData[i]));
 		}
 		RFmsgSubtype subtype = RFmsgSubtype.get(msg.getPacketType(), msg.getPacketSubtype());
-		Map<String,Object> firstInterpret = msg.getFirstLevelInterpret();
-		for (Entry<String,Object> entry : firstInterpret.entrySet()) {
-			env.put(prefix + subtype.toString()+"_"+entry.getKey(), entry.getValue().toString());
+		Map<String,Object> interpret = msg.getSecondLevelInterpret();
+		for (Entry<String,Object> entry : interpret.entrySet()) {
+			env.put(prefix + "MSG_" + /*subtype.toString()+"_"+ */ entry.getKey(), entry.getValue().toString());
 		}
 		if (subtype != null) {
 			env.put(prefix+"TYPE_NAME", subtype.getMsgType().toString());
