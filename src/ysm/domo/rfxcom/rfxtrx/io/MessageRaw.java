@@ -95,6 +95,7 @@ public class MessageRaw {
 		RFmsgSubtype subtype = RFmsgSubtype.get(getPacketType(), getPacketSubtype());
 		Map<String,Object> result = getFirstLevelInterpret();
 		Map<String,Object> tmpResult = new HashMap<String,Object>();
+		ScriptEngineManager engineManager =	new ScriptEngineManager();
 		if (subtype != null) {
 			Map<String,String> compute= subtype.getCompute();
 			for (Entry<String,String> entry: compute.entrySet()) {
@@ -102,7 +103,6 @@ public class MessageRaw {
 				String computeScript = entry.getValue();
 				Object resultScript="NoValue";
 				// execute script
-				ScriptEngineManager engineManager =	new ScriptEngineManager();
 				ScriptEngine engine = engineManager.getEngineByName("javascript");
 				try {
 					// eval base script for message generation

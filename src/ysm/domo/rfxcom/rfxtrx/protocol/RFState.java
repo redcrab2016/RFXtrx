@@ -60,7 +60,7 @@ public class RFState {
 		StringBuffer sb = new StringBuffer();
 		sb
 //		.append("State Message: ").append(stateMessage.toString()).append("\n")
-		.append("RFtrxType         : ").append(rfxtrxType.getDescription()).append("\n")
+		.append("Transceiver Type  : ").append(rfxtrxType.getDescription()).append("\n")
 		.append("Selected Frequency: ").append(rfFrequency.getDescription()).append("\n")
 		.append("Hardware Version  : ").append(HWVersion).append("\n")
 		.append("Firmware Type     : ").append(FWType.getDescription()).append("\n")

@@ -73,6 +73,7 @@ public class Protocol {
 	 * @throws ProtocolException
 	 */
 	public void init() throws ProtocolException {
+		LOGGER.info("Service Initializing...");
 		transport = null;
 		messageQueue = null;
 		shutdown = false;
@@ -80,9 +81,10 @@ public class Protocol {
 			start();
 		}	catch(ProtocolException e) {
 			stop();
+			LOGGER.warning("Service initialization failure");
 			throw e;
 		}
-		
+		LOGGER.info("Service Initialized");
 	}
 	
 	/**
@@ -296,14 +298,19 @@ public class Protocol {
 	
 	public String controlReset() throws ProtocolException {
 		try {
+			LOGGER.info("Start transceiver reset procedure");
 			MessageRaw msgReset = new MessageRaw(	0/*type*/, 0/*subtype*/, 0/*sequence*/, new short[] {0,0,0,0,0,0,0,0,0,0});
 			transport.sendMessage(msgReset);
+			LOGGER.info("Reset message sent");
 			// after message reset be sure to clear reception buffer
 			for (int i=0;i < 10; i++) { // during 2 secondes consumme the reception
 				pause(200);
 				transport.receiveMessage(false);
 			}
+			LOGGER.info("Transceiver pending reading cleared");
+			LOGGER.info("Transceiver status requested");
 			controlGetStatus();
+			LOGGER.info("Transceiver status received");
 			String strfrequency = config.get("rfxtrx.protocol.frequency",RFXStateConfig.getRfFrequency().getDescription());
 			String strxmitpower = config.get("rfxtrx.protocol.txpower", RFXStateConfig.getXmitPower().getDescription());
 			String strproto = config.get("rfxtrx.protocol.enable");
@@ -332,9 +339,12 @@ public class Protocol {
 					toUpdate = true;
 				}
 			}
-			if (toUpdate) controlSetMode();
+			if (toUpdate) {
+				controlSetMode();
+				LOGGER.info("Transceiver mode set");
+			}
 			String started =  controlStartRFXtrxReceiver();
-			LOGGER.info("\n"+started + "\n" + RFXStateConfig.toString());
+			LOGGER.info("\nDevice License    : "+started + "\n" + RFXStateConfig.toString());
 			return started;
 		} catch (TransportException e) {
 			throw new ProtocolException("Device reset failed.",e);

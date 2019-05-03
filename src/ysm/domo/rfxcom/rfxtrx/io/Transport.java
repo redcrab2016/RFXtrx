@@ -27,15 +27,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.logging.Logger;
 
 import ysm.domo.rfxcom.rfxtrx.Config;
+import ysm.domo.rfxcom.rfxtrx.protocol.Protocol;
 
 /**
  * @author edevaux
  *
  */
 public class Transport {
-	private InputStream in;
+	private static final Logger LOGGER = Logger.getLogger( Transport.class.getName() );	private InputStream in;
 	private OutputStream out;
 	private MessagePump pump;
 	private Thread pumpThread;
@@ -85,6 +87,7 @@ public class Transport {
 		
 		@Override
 		public void run() {
+			LOGGER.info("Transceiver message pump started");
 			while (! stop) {
 				try {
 					int i=42;
@@ -110,6 +113,7 @@ public class Transport {
 					stop=true;
 				} //*/
 			}
+			LOGGER.info("Transceiver message pump stopped");
 		}
 		
 	}
@@ -204,6 +208,7 @@ public class Transport {
 	}
 	
 	private void startMessagePump() {
+		LOGGER.info("Starting: Transceiver message pump reader");
 		if (pumpThread != null) {
 			pump.stop();
 			pump = new MessagePump(in);
@@ -218,6 +223,7 @@ public class Transport {
 		} catch (InterruptedException e) {
 			// don't care 
 		}
+		LOGGER.info("Started: Transceiver message pump reader");
 	}
 	
 	private void init(File devicePath) throws TransportException {
@@ -270,6 +276,7 @@ public class Transport {
 				int status=-4242;
 				try {
 					status = p.waitFor();
+					LOGGER.info("Transceiver device port " + devicePath + " configured");
 				} catch (InterruptedException e) {
 					// do nothing
 				}
@@ -278,6 +285,7 @@ public class Transport {
 				}
 			}
 			init(fDevicePath);
+			LOGGER.info("Transceiver device port " + devicePath + " opened and ready for communication");
 		} else {
 			throw new TransportException("Unsupported OS "+os);
 		}

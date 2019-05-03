@@ -221,3 +221,15 @@ function status_sec1() {
 	if (status == 0x85) return "no motion + tamper";	
 	return null;
 }
+
+function chimeSound() {
+	if (msgraw.getPacketSutype() == 0x00) { // Chime SX21
+		if (sound == 0x01 || sound == 0x0D) return "Tubular 3 notes";
+		if (sound == 0x03 || sound == 0x0E) return "Big Ben";
+		if (sound == 0x05 || sound == 0x06) return "Tubular 2 notes";
+		if (sound == 0x09 || sound == 0x02) return "Solo";
+		return "Sound"+sound; // for other Chime SX
+	} 
+	return null; // ignore this value
+}
+
