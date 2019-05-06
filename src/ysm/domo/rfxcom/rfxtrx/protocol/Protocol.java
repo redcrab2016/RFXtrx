@@ -311,8 +311,14 @@ public class Protocol {
 			LOGGER.info("Transceiver status requested");
 			controlGetStatus();
 			LOGGER.info("Transceiver status received");
-			String strfrequency = config.get("rfxtrx.protocol.frequency",RFXStateConfig.getRfFrequency().getDescription());
-			String strxmitpower = config.get("rfxtrx.protocol.txpower", RFXStateConfig.getXmitPower().getDescription());
+			String strfrequency=RFXStateConfig.getRfFrequency().getDescription();
+			if (config.getKeyList().contains("rfxtrx.protocol.frequency")) {
+				strfrequency= config.get("rfxtrx.protocol.frequency");
+			} 
+			String strxmitpower= RFXStateConfig.getXmitPower().getDescription() ;
+			if (config.getKeyList().contains("rfxtrx.protocol.frequency")) {
+				strxmitpower= config.get("rfxtrx.protocol.txpower");
+			} 
 			String strproto = config.get("rfxtrx.protocol.enable");
 			boolean toUpdate = false;
 			if (strproto != null) {

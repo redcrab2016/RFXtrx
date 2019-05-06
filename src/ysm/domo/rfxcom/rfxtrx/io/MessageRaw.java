@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -96,6 +97,7 @@ public class MessageRaw {
 		Map<String,Object> result = getFirstLevelInterpret();
 		Map<String,Object> tmpResult = new HashMap<String,Object>();
 		ScriptEngineManager engineManager =	new ScriptEngineManager();
+		ScriptEngine engine = engineManager.getEngineByName("javascript");
 		if (subtype != null) {
 			Map<String,String> compute= subtype.getCompute();
 			for (Entry<String,String> entry: compute.entrySet()) {
@@ -103,7 +105,8 @@ public class MessageRaw {
 				String computeScript = entry.getValue();
 				Object resultScript="NoValue";
 				// execute script
-				ScriptEngine engine = engineManager.getEngineByName("javascript");
+				engine.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
+				engine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE).clear();				
 				try {
 					// eval base script for message generation
 					String scriptName = "ysm/domo/rfxcom/rfxtrx/protocol/dataCompute.js";
