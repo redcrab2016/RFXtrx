@@ -302,12 +302,22 @@ public class Protocol {
 			MessageRaw msgReset = new MessageRaw(	0/*type*/, 0/*subtype*/, 0/*sequence*/, new short[] {0,0,0,0,0,0,0,0,0,0});
 			transport.sendMessage(msgReset);
 			LOGGER.info("Reset message sent");
+			LOGGER.info("Transceiver flushing input buffer");
 			// after message reset be sure to clear reception buffer
-			for (int i=0;i < 10; i++) { // during 2 secondes consumme the reception
-				pause(200);
-				transport.receiveMessage(false);
+			for (int i=0;i < 80; i++) { // during 8 seconds consume the reception
+				pause(100);
+				try {
+					if (transport.isStopped()) {
+						transport.start();
+					}
+					if (transport.receiveMessage(false)!= null) {
+						i=20;
+					}
+				} catch (TransportException e) {
+						// do nothing we're purging the input
+				}
 			}
-			LOGGER.info("Transceiver pending reading cleared");
+			LOGGER.info("Transceiver input buffer flushed");
 			LOGGER.info("Transceiver status requested");
 			controlGetStatus();
 			LOGGER.info("Transceiver status received");
@@ -349,11 +359,9 @@ public class Protocol {
 				controlSetMode();
 				LOGGER.info("Transceiver mode set");
 			}
-			String started =  controlStartRFXtrxReceiver();
+			String started =  controlStartRFXtrxReceiver(); // should return "Copyright RFXCOM"
 			LOGGER.info("\nDevice License    : "+started + "\n" + RFXStateConfig.toString());
 			return started;
-		} catch (TransportException e) {
-			throw new ProtocolException("Device reset failed.",e);
 		} catch (MessageException e) {
 			throw new ProtocolException("Device reset failed.",e);
 		}

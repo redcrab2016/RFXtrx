@@ -367,7 +367,7 @@ public class MessageRaw {
 						startWait = System.currentTimeMillis();
 					} else {
 						long waitDelay= System.currentTimeMillis()- startWait;
-						if (waitDelay > 1000*5) { // wait 5 seconds maximum 
+						if (waitDelay > 500) { // wait 0.5 second maximum 
 							throw new MessageException("Too slow or too long wait for message data to be received.");
 						}
 					}

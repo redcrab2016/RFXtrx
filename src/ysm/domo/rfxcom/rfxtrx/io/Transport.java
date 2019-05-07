@@ -37,7 +37,8 @@ import ysm.domo.rfxcom.rfxtrx.protocol.Protocol;
  *
  */
 public class Transport {
-	private static final Logger LOGGER = Logger.getLogger( Transport.class.getName() );	private InputStream in;
+	private static final Logger LOGGER = Logger.getLogger( Transport.class.getName() );
+	private InputStream in;
 	private OutputStream out;
 	private MessagePump pump;
 	private Thread pumpThread;
@@ -90,8 +91,7 @@ public class Transport {
 			LOGGER.info("Transceiver message pump started");
 			while (! stop) {
 				try {
-					int i=42;
-					if (in.available()>0 && i == 42) {
+					if (in.available()>0) {
 						msg = new MessageRaw(in);
 						synchronized(msgFIFO) {
 							if (!stop)	msgFIFO.add(msg);
